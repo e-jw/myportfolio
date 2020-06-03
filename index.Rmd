@@ -33,6 +33,6 @@ Studying econometrics means I focus on discovering causal relationships and test
 </div>
 <div class="col-sm-6">
 
-![](images/ai-img.png)
+![](images/world.png)
 </a>
 </div>
