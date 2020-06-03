@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Multivariate Regression</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="multiregression.html">Multivariate Regression</a>
+</li>
+<li>
+  <a href="Links.html">Links</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Multivariate Regression</h1>
+
+</div>
+
+
+<div id="multiple-linear-regression-of-the-prices-of-houses-in-king-county-usa." class="section level1">
+<h1><strong>Multiple linear regression of the prices of houses in King County, USA.</strong></h1>
+<div id="by-elias-wilson" class="section level2">
+<h2><em>By Elias Wilson</em></h2>
+<p>I am an economics student at the University of Bristol and I have created this project to practice and display some of the skills I have learned in my first year econometrics classes. I will be using a dataset to infer how the prices of houses in King County, USA. have been generated.</p>
+<div id="load-data-and-packages-then-explore" class="section level4">
+<h4>1. Load data and packages then explore</h4>
+<pre class="r"><code>#import libraries
+#
+library(tidyverse) 
+library(gridExtra)
+library(corrplot)
+library(RColorBrewer)
+library(stargazer)
+library(usdm)</code></pre>
+<pre class="r"><code>##load in data
+#
+house &lt;- read_csv(&quot;kc_house_data.csv&quot;)
+glimpse(house)</code></pre>
+<pre><code>## Observations: 21,613
+## Variables: 21
+## $ id            &lt;chr&gt; &quot;7129300520&quot;, &quot;6414100192&quot;, &quot;5631500400&quot;, &quot;2487200…
+## $ date          &lt;dttm&gt; 2014-10-13, 2014-12-09, 2015-02-25, 2014-12-09, 2…
+## $ price         &lt;dbl&gt; 221900, 538000, 180000, 604000, 510000, 1225000, 2…
+## $ bedrooms      &lt;dbl&gt; 3, 3, 2, 4, 3, 4, 3, 3, 3, 3, 3, 2, 3, 3, 5, 4, 3,…
+## $ bathrooms     &lt;dbl&gt; 1.00, 2.25, 1.00, 3.00, 2.00, 4.50, 2.25, 1.50, 1.…
+## $ sqft_living   &lt;dbl&gt; 1180, 2570, 770, 1960, 1680, 5420, 1715, 1060, 178…
+## $ sqft_lot      &lt;dbl&gt; 5650, 7242, 10000, 5000, 8080, 101930, 6819, 9711,…
+## $ floors        &lt;dbl&gt; 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, …
+## $ waterfront    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ view          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0,…
+## $ condition     &lt;dbl&gt; 3, 3, 3, 5, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3,…
+## $ grade         &lt;dbl&gt; 7, 7, 6, 7, 8, 11, 7, 7, 7, 7, 8, 7, 7, 7, 7, 9, 7…
+## $ sqft_above    &lt;dbl&gt; 1180, 2170, 770, 1050, 1680, 3890, 1715, 1060, 105…
+## $ sqft_basement &lt;dbl&gt; 0, 400, 0, 910, 0, 1530, 0, 0, 730, 0, 1700, 300, …
+## $ yr_built      &lt;dbl&gt; 1955, 1951, 1933, 1965, 1987, 2001, 1995, 1963, 19…
+## $ yr_renovated  &lt;dbl&gt; 0, 1991, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ zipcode       &lt;dbl&gt; 98178, 98125, 98028, 98136, 98074, 98053, 98003, 9…
+## $ lat           &lt;dbl&gt; 47.5112, 47.7210, 47.7379, 47.5208, 47.6168, 47.65…
+## $ long          &lt;dbl&gt; -122.257, -122.319, -122.233, -122.393, -122.045, …
+## $ sqft_living15 &lt;dbl&gt; 1340, 1690, 2720, 1360, 1800, 4760, 2238, 1650, 17…
+## $ sqft_lot15    &lt;dbl&gt; 5650, 7639, 8062, 5000, 7503, 101930, 6819, 9711, …</code></pre>
+<p>We can see that the dataset has 21 variables and 21,613 observations. Most of the variable names are self explanotary (i.e. bedrooms and bathrooms) but some data, such as those presumably measuring square footage, are not so clear.</p>
+<p>From looking at the <a href="https://info.kingcounty.gov/assessor/esales/Glossary.aspx?type=r">metadata of the dataset</a>, I found that: sqft_lot measures the square footage of the land space; sqft_living measures the square footage of interior living space; sqft_above measures interior housing space that is above ground level and all variables with 15 at the end are those measurements from the 15 nearest neighbours to the house.</p>
+<p>Before proceeding to look anymore at the data I will check to see if there are any NA values in the data.</p>
+<pre class="r"><code>#check variables for NA values
+#
+for(x in 1:ncol(house)){
+  naTable = table(is.na(house[[x]]))
+  if(!is.na(naTable[2])){
+    print(colnames(house)[x])
+  }
+} </code></pre>
+<p>Since no column names were returned I will start to look at the distribution of the variables.</p>
+<pre class="r"><code>#look at distribution of dependent variable
+#
+house%&gt;%ggplot(aes(x = price)) + 
+  geom_density(fill = &quot;#66CC00&quot;) + 
+  labs(x = &quot;Price&quot;, y = &quot;Density&quot;, title = &quot;Density plot of price&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>#density of square footage of house variables
+#
+sqftLivingDensity &lt;- house%&gt;%ggplot(aes(x = sqft_living)) + 
+  geom_density(fill = &quot;009999&quot;) +
+  labs(x = &quot;Square footage of living area&quot;, title  = &quot;Density of living area SF&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))
+
+sqftLotDensity &lt;- house%&gt;%ggplot(aes(x = sqft_lot)) + 
+  geom_density(fill = &quot;#0066CC&quot;) +
+  labs(x = &quot;Square footage of land space area&quot;, title  = &quot;Density plot of land space SF&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))
+
+sqftAbvDensity &lt;- house%&gt;%ggplot(aes(x = sqft_above)) + 
+  geom_density(fill = &quot;#CC00CC&quot;) +
+  labs(x = &quot;Square footage of space above ground&quot;, title  = &quot;Density plot of above ground SF variable&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))
+
+sqftBsmtDensity &lt;- house%&gt;%ggplot(aes(x = sqft_basement)) + 
+  geom_density(fill = &quot;#00CCCC&quot;) +
+  labs(x = &quot;Square footage of basement&quot;, title  = &quot;Density plot of basement SF&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))
+
+grid.arrange(sqftAbvDensity, sqftBsmtDensity, sqftLivingDensity, sqftLotDensity, ncol = 2)</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>The density plot for the square footage of the basement looks odd, this is most likely caused by a measurement of 0 for houses without a basement. After a closer look I discovered that there were observations without a basement.</p>
+<p>After removing the observations without a basement the density plot looks like this.</p>
+<pre class="r"><code>house%&gt;%filter(sqft_basement &gt; 0)%&gt;%
+  ggplot(aes(x = sqft_basement)) + 
+  geom_density(fill = &quot;#00CCCC&quot;) +
+  labs(x = &quot;Square footage of basement&quot;, title  = &quot;Density plot of basement SF&quot;, 
+       subtitle = &quot;Observations without basement removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Since the square footage of the basement contains 0 values I would not be able to perform a log transformation to the skewed distribution. Also there is a good chance that this variable will be correlated with other square footage variables in the dataset which would cause problems in the regression, so I will drop it.</p>
+<p>However, I will try to capture some of the variance by creating a dummy variable indicating whether the house has a basement or not.</p>
+<pre class="r"><code>house &lt;- house%&gt;%mutate(bsmt = ifelse(sqft_basement &gt; 0, 1, 0))
+
+house$sqft_basement &lt;- NULL</code></pre>
+<p>I suspect that because not all houses will be renovated so a similar approach can be taken with the variable yr_renovated.</p>
+<p>I found that 95.77% of the observations have not been renovated and have a 0 value for this variable.</p>
+<pre class="r"><code>house &lt;- house%&gt;%mutate(renovated = ifelse(yr_renovated  == 0, 0, 1))
+
+house$yr_renovated &lt;- NULL</code></pre>
+<p>From looking at this newly created variable we can see that houses that have been renovated are on average more expensive than those that have not.</p>
+<pre class="r"><code>house%&gt;%group_by(renovated)%&gt;%
+  summarise(avePrice = mean(price))%&gt;%
+  ggplot(aes(x = as.factor(renovated), y = avePrice, fill = as.factor(renovated))) + 
+  geom_bar(stat = &quot;identity&quot;) +
+  scale_fill_manual(values = c(&quot;#00CCCC&quot;, &quot;#0066CC&quot;)) +
+  labs(x = &quot;Renovated&quot;, y = &quot;Mean price&quot;, 
+       title = &quot;Price difference of houses 
+that have been renovated&quot;) +
+  theme(legend.position = &quot;none&quot;, 
+        plot.title = element_text(face = &quot;bold&quot;, size  = 20))</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Now I will look at the density plots of the square footage of the nearest 15 neighbours to see if it follows a similar trend.</p>
+<pre class="r"><code>#density of square footage of nearest 15 houses
+#
+sqftLiving15Density &lt;- house%&gt;%ggplot(aes(x = sqft_living15)) + 
+  geom_density(fill = &quot;009999&quot;) +
+  labs(x = &quot;Square footage of living area&quot;, 
+       title  = &quot;Density plot of living area 
+SF of neighbours&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))
+
+sqftLot15Density &lt;- house%&gt;%ggplot(aes(x = sqft_lot15)) + 
+  geom_density(fill = &quot;#0066CC&quot;) +
+  labs(x = &quot;Square footage of land space area&quot;, 
+       title  = &quot;Density plot of land space 
+SF of neighbours&quot;, 
+       subtitle = &quot;No data removed&quot;) +
+  theme(plot.title = element_text(face = &quot;bold&quot;))
+
+grid.arrange(sqftLiving15Density, sqftLot15Density, ncol = 2) </code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Looks like these variables follow the same right skewed distribution as the other square footage variables.</p>
+<p>I am going to drop the date variable as well as longitude and latitude variable.</p>
+<p>I think that I may be able to derive a variable that measures the price of houses in different areas, I will look into this by examining the zipcodes of the houses.</p>
+<pre class="r"><code>#drop date, long and lat
+#
+house$date &lt;- NULL
+house[, c(&quot;long&quot;, &quot;lat&quot;)] &lt;- NULL
+
+
+house%&gt;%ggplot(aes(x = as.factor(reorder(zipcode, price, FUN = median)), y = price)) + 
+  geom_boxplot(colour = &quot;#606060&quot;, 
+               outlier.alpha = 0.25, 
+               outlier.color = &quot;#CCCCFF&quot;) + 
+  scale_y_continuous(breaks = seq(from = 0, to = max(house$price), by = max(house$price)/10)) + 
+  labs(x = &quot;Zipcode&quot;, y = &quot;Price&quot;, title = &quot;Different price distributions by zipcode&quot;, 
+       subtitle = &quot;80 zipcodes&quot;) + 
+  theme(plot.title = element_text(face = &quot;bold&quot;)) + coord_flip()</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>There looks like there is a trend that some areas are richer than others. I will create a rank of how wealthy the area is.</p>
+<pre class="r"><code>#create a dummy variable for rank of area
+#
+zipRank &lt;- house%&gt;%group_by(as.factor(zipcode))%&gt;%
+  summarise(medianPrice = median(price))%&gt;%arrange(desc(medianPrice))
+
+zipRank$areaWealth &lt;- c(rep(5, 14), rep(4, 14), rep(3, 14), rep(2, 14), rep(1, 14)) 
+colnames(zipRank)[1] &lt;- &quot;zipcode&quot;
+
+house &lt;- merge(house, zipRank, by = &quot;zipcode&quot;)
+house$medianPrice &lt;- NULL
+house$zipcode &lt;- NULL</code></pre>
+<p>Now I will take a look at the relationship that the number of bedrooms and bathrooms have with the price of the house.</p>
+<pre class="r"><code>bedroomBox &lt;- house%&gt;%ggplot(aes(x = as.factor(bedrooms), y = price)) + 
+  geom_boxplot(colour = &quot;#606060&quot;, 
+               outlier.alpha = 0.75, 
+               outlier.color = &quot;#CCCCFF&quot;) + 
+  labs(title = &quot;Number of bedrooms 
+relationship with price&quot;, 
+       x = &quot;No. of bedrooms&quot;, y = &quot;Price&quot;) + 
+  theme(plot.title = element_text(face = &quot;bold&quot;)) + coord_flip()
+
+bathroomBox &lt;- house%&gt;%ggplot(aes(x = as.factor(bathrooms), y = price)) + 
+  geom_boxplot(colour = &quot;#606060&quot;, 
+               outlier.alpha = 0.5, 
+               outlier.color = &quot;#CCCCFF&quot;) + 
+  labs(title = &quot;Number of bathrroms 
+relationship with price&quot;, 
+       x = &quot;No. of bathrooms&quot;, y = &quot;Price&quot;) + 
+  theme(plot.title = element_text(face = &quot;bold&quot;)) + coord_flip()
+
+grid.arrange(bedroomBox, bathroomBox, ncol = 2)</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>There is house with 33 bedrooms which sold for a relatively low price considering a house like that must be quite large in size. It is possible that this is a data entry error so I will take a look at the individual observation.</p>
+<p>After looking at the observation I think that this value was supposed to be a 3 as the mean square footage of the living area for a 3 bedroom house fits similarly with our 33 bedroom observation as do other properties.</p>
+<pre class="r"><code>house[house$bedrooms == 33, &quot;bedrooms&quot;] &lt;- 3</code></pre>
+<p>I am going to use the yr_built variable to engineer an age variable for the house, this will make this propert a continuous variable which is easier to interpret. I will have to omit the variable yr_built as age will be a linear combination of yr_built which will cause perfect multicollinearity.</p>
+<pre class="r"><code>#the most recent year a house was built was 2015 so to make age subtract yr_built from 2015
+#
+house$age &lt;- 2015 - house$yr_built
+house$yr_built &lt;- NULL</code></pre>
+</div>
+<div id="variable-selection-and-model" class="section level4">
+<h4>2.Variable selection and Model</h4>
+<p>Price and variables that measure square footage have a right skew so would benefit from being transformed and would be easily interpreted if they were log transformed.</p>
+<pre class="r"><code>#make copy of dataset before manipulating
+#
+houseMod &lt;- house
+
+#log variables
+#
+houseMod$price &lt;- log(house$price)
+colnames(houseMod)[2] &lt;- &quot;log of price&quot;
+
+sqftVars &lt;- grep(&quot;^sqft&quot;, colnames(houseMod))
+
+houseMod[, sqftVars] &lt;- log(houseMod[, sqftVars])
+colnames(houseMod) &lt;- gsub(&quot;sqft&quot;, &quot;log of sqft&quot;, colnames(houseMod))</code></pre>
+<p>Now the data has been transformed I can look at the correlations that the dependent variables have with the independent variable and eachother.</p>
+<pre class="r"><code>#make correlation matrix
+#
+cor &lt;- cor(houseMod[, -1])
+
+#plot correlations
+#
+corrplot(cor, method = &quot;shade&quot;, type = &quot;upper&quot;, 
+                       tl.cex = 0.5, tl.col = &quot;black&quot;,
+                       cl.cex = 0.5, cl.pos = &quot;r&quot;, 
+                       col = brewer.pal(n = 8, name = &quot;BuPu&quot;), 
+                       addCoef.col = &quot;black&quot;, number.cex = 0.5)</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-17-1.png" width="960" /></p>
+<p>We can see from the correlation matrix that some predictor variables have strong correlations with eachother. I will use the Variance inflation factors to look for multicollinearity.</p>
+<p>If I were to omit these variables then my model would suffer from omitted variable bias so I will leave them as possible candidates to interpret price. As these variables are multicollinear this will make our coefficients have a greater standard error and therefore more unreliable.</p>
+<pre class="r"><code>#find the VIF of variables to determine which variables are multicollinear (&gt;4)
+#
+vif(houseMod[, -c(1, 2)])%&gt;%filter(VIF &gt; 4)</code></pre>
+<pre><code>##            Variables       VIF
+## 1 log of sqft_living 19.239934
+## 2    log of sqft_lot  6.728611
+## 3  log of sqft_above 19.048430
+## 4  log of sqft_lot15  6.402700
+## 5               bsmt  4.357465</code></pre>
+<pre class="r"><code>#turn neccessary variables into factors
+#
+nonFactors &lt;- grep(&quot;^log of&quot;, colnames(houseMod))
+nonFactors &lt;- c(18, nonFactors)
+
+houseMod[, -nonFactors] &lt;- lapply(houseMod[, -nonFactors], as.factor)
+glimpse(houseMod)</code></pre>
+<pre><code>## Observations: 21,613
+## Variables: 18
+## $ id                     &lt;fct&gt; 0302000375, 6181400920, 2005950050, 89562…
+## $ `log of price`         &lt;dbl&gt; 12.03825, 12.56602, 12.46844, 13.01143, 1…
+## $ bedrooms               &lt;fct&gt; 3, 3, 3, 4, 3, 4, 2, 3, 3, 4, 3, 3, 3, 3,…
+## $ bathrooms              &lt;fct&gt; 2, 2.5, 2, 2.5, 2.5, 2.75, 1, 2.5, 1.5, 2…
+## $ `log of sqft_living`   &lt;dbl&gt; 6.956545, 7.512071, 7.396335, 7.793587, 7…
+## $ `log of sqft_lot`      &lt;dbl&gt; 9.814875, 8.516593, 8.989444, 9.106867, 9…
+## $ floors                 &lt;fct&gt; 1, 2, 1, 2, 2, 1, 1, 2, 1, 2, 1.5, 1, 1.5…
+## $ waterfront             &lt;fct&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ view                   &lt;fct&gt; 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0,…
+## $ condition              &lt;fct&gt; 4, 3, 3, 3, 3, 2, 4, 3, 3, 3, 3, 3, 4, 3,…
+## $ grade                  &lt;fct&gt; 7, 7, 7, 9, 9, 9, 9, 8, 7, 8, 8, 8, 5, 7,…
+## $ `log of sqft_above`    &lt;dbl&gt; 6.956545, 7.512071, 7.396335, 7.793587, 7…
+## $ `log of sqft_living15` &lt;dbl&gt; 7.432484, 7.819234, 7.383989, 7.910224, 7…
+## $ `log of sqft_lot15`    &lt;dbl&gt; 9.659822, 8.516793, 9.035630, 8.856376, 9…
+## $ bsmt                   &lt;fct&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ renovated              &lt;fct&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ areaWealth             &lt;fct&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
+## $ age                    &lt;dbl&gt; 62, 11, 12, 2, 10, 46, 61, 22, 48, 3, 17,…</code></pre>
+<pre class="r"><code>#delete id variable
+#
+houseMod[, 1] &lt;- NULL</code></pre>
+<p>Now I will make a model with all variables in and look at the summary statistics.</p>
+<pre class="r"><code>#create  model
+#
+mod1 &lt;- lm(`log of price`~., houseMod)
+stargazer(mod1, type = &quot;text&quot;)</code></pre>
+<pre><code>## 
+## ====================================================
+##                             Dependent variable:     
+##                        -----------------------------
+##                               `log of price`        
+## ----------------------------------------------------
+## bedrooms1                         -0.024            
+##                                   (0.080)           
+##                                                     
+## bedrooms2                         -0.037            
+##                                   (0.079)           
+##                                                     
+## bedrooms3                         -0.082            
+##                                   (0.079)           
+##                                                     
+## bedrooms4                         -0.088            
+##                                   (0.079)           
+##                                                     
+## bedrooms5                         -0.098            
+##                                   (0.079)           
+##                                                     
+## bedrooms6                         -0.140*           
+##                                   (0.080)           
+##                                                     
+## bedrooms7                        -0.220**           
+##                                   (0.086)           
+##                                                     
+## bedrooms8                         -0.120            
+##                                   (0.099)           
+##                                                     
+## bedrooms9                         -0.240*           
+##                                   (0.124)           
+##                                                     
+## bedrooms10                       -0.315**           
+##                                   (0.146)           
+##                                                     
+## bedrooms11                        -0.116            
+##                                   (0.225)           
+##                                                     
+## bathrooms0.5                      -0.039            
+##                                   (0.144)           
+##                                                     
+## bathrooms0.75                      0.129            
+##                                   (0.101)           
+##                                                     
+## bathrooms1                         0.138            
+##                                   (0.098)           
+##                                                     
+## bathrooms1.25                      0.126            
+##                                   (0.121)           
+##                                                     
+## bathrooms1.5                       0.131            
+##                                   (0.099)           
+##                                                     
+## bathrooms1.75                      0.145            
+##                                   (0.098)           
+##                                                     
+## bathrooms2                         0.153            
+##                                   (0.099)           
+##                                                     
+## bathrooms2.25                      0.156            
+##                                   (0.099)           
+##                                                     
+## bathrooms2.5                      0.168*            
+##                                   (0.098)           
+##                                                     
+## bathrooms2.75                     0.189*            
+##                                   (0.099)           
+##                                                     
+## bathrooms3                        0.211**           
+##                                   (0.099)           
+##                                                     
+## bathrooms3.25                     0.253**           
+##                                   (0.099)           
+##                                                     
+## bathrooms3.5                      0.250**           
+##                                   (0.099)           
+##                                                     
+## bathrooms3.75                    0.318***           
+##                                   (0.100)           
+##                                                     
+## bathrooms4                       0.272***           
+##                                   (0.100)           
+##                                                     
+## bathrooms4.25                    0.340***           
+##                                   (0.101)           
+##                                                     
+## bathrooms4.5                     0.293***           
+##                                   (0.101)           
+##                                                     
+## bathrooms4.75                    0.388***           
+##                                   (0.108)           
+##                                                     
+## bathrooms5                       0.391***           
+##                                   (0.109)           
+##                                                     
+## bathrooms5.25                    0.433***           
+##                                   (0.115)           
+##                                                     
+## bathrooms5.5                     0.506***           
+##                                   (0.120)           
+##                                                     
+## bathrooms5.75                     0.290**           
+##                                   (0.146)           
+##                                                     
+## bathrooms6                       0.501***           
+##                                   (0.132)           
+##                                                     
+## bathrooms6.25                     0.465**           
+##                                   (0.182)           
+##                                                     
+## bathrooms6.5                       0.290            
+##                                   (0.179)           
+##                                                     
+## bathrooms6.75                      0.084            
+##                                   (0.180)           
+##                                                     
+## bathrooms7.5                       0.131            
+##                                   (0.251)           
+##                                                     
+## bathrooms7.75                    0.867***           
+##                                   (0.242)           
+##                                                     
+## bathrooms8                        0.358*            
+##                                   (0.184)           
+##                                                     
+## `log of sqft_living`             0.255***           
+##                                   (0.015)           
+##                                                     
+## `log of sqft_lot`                0.034***           
+##                                   (0.004)           
+##                                                     
+## floors1.5                        0.018***           
+##                                   (0.006)           
+##                                                     
+## floors2                            0.002            
+##                                   (0.005)           
+##                                                     
+## floors2.5                         0.033*            
+##                                   (0.018)           
+##                                                     
+## floors3                          0.054***           
+##                                   (0.011)           
+##                                                     
+## floors3.5                          0.117            
+##                                   (0.076)           
+##                                                     
+## waterfront1                      0.412***           
+##                                   (0.021)           
+##                                                     
+## view1                            0.157***           
+##                                   (0.012)           
+##                                                     
+## view2                            0.125***           
+##                                   (0.007)           
+##                                                     
+## view3                            0.182***           
+##                                   (0.010)           
+##                                                     
+## view4                            0.286***           
+##                                   (0.015)           
+##                                                     
+## condition2                       0.115***           
+##                                   (0.042)           
+##                                                     
+## condition3                       0.253***           
+##                                   (0.040)           
+##                                                     
+## condition4                       0.277***           
+##                                   (0.040)           
+##                                                     
+## condition5                       0.347***           
+##                                   (0.040)           
+##                                                     
+## grade3                            -0.067            
+##                                   (0.255)           
+##                                                     
+## grade4                            -0.282            
+##                                   (0.231)           
+##                                                     
+## grade5                            -0.271            
+##                                   (0.229)           
+##                                                     
+## grade6                            -0.140            
+##                                   (0.229)           
+##                                                     
+## grade7                            -0.024            
+##                                   (0.229)           
+##                                                     
+## grade8                             0.072            
+##                                   (0.229)           
+##                                                     
+## grade9                             0.217            
+##                                   (0.229)           
+##                                                     
+## grade10                            0.311            
+##                                   (0.229)           
+##                                                     
+## grade11                           0.440*            
+##                                   (0.229)           
+##                                                     
+## grade12                           0.583**           
+##                                   (0.230)           
+##                                                     
+## grade13                          0.826***           
+##                                   (0.238)           
+##                                                     
+## `log of sqft_above`              0.155***           
+##                                   (0.015)           
+##                                                     
+## `log of sqft_living15`           0.092***           
+##                                   (0.008)           
+##                                                     
+## `log of sqft_lot15`              -0.046***          
+##                                   (0.005)           
+##                                                     
+## bsmt1                            0.060***           
+##                                   (0.006)           
+##                                                     
+## renovated1                       0.052***           
+##                                   (0.008)           
+##                                                     
+## areaWealth2                      0.242***           
+##                                   (0.005)           
+##                                                     
+## areaWealth3                      0.424***           
+##                                   (0.005)           
+##                                                     
+## areaWealth4                      0.602***           
+##                                   (0.005)           
+##                                                     
+## areaWealth5                      0.737***           
+##                                   (0.006)           
+##                                                     
+## age                              0.002***           
+##                                  (0.0001)           
+##                                                     
+## Constant                         8.437***           
+##                                   (0.218)           
+##                                                     
+## ----------------------------------------------------
+## Observations                      21,613            
+## R2                                 0.841            
+## Adjusted R2                        0.840            
+## Residual Std. Error         0.210 (df = 21535)      
+## F Statistic            1,479.801*** (df = 77; 21535)
+## ====================================================
+## Note:                    *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>From these statistics I can see that bathrooms and grade variables have a large majority of their dummy variables labelled as statistically insignificant at the 5% level. It should also be noted that the more significant dummy variables created from these measurements tend to be at the more extreme observations (i.e. grade 13 is the top grade and the most statistcally significant and the more bathrooms the more significant the measure tends to be).</p>
+<p>I will try to model the log of price without these variables in but as the data suffers from multicollinearity the likeliness of making a type 2 error is high as I would suspect that these two variables would usually be good predictors of house price. One way I could increase my confidence in variable selection would be to increase the number of observations I have which would decrease the standard error, however, sadly I cannot with this dataset.</p>
+<pre class="r"><code>#create second model excluding grade and bedrooms
+#
+mod2 &lt;- lm(`log of price`~.-bedrooms -grade, houseMod)
+stargazer(mod2, type =&quot;text&quot;)</code></pre>
+<pre><code>## 
+## ====================================================
+##                             Dependent variable:     
+##                        -----------------------------
+##                               `log of price`        
+## ----------------------------------------------------
+## bathrooms0.5                      -0.174            
+##                                   (0.133)           
+##                                                     
+## bathrooms0.75                     -0.030            
+##                                   (0.076)           
+##                                                     
+## bathrooms1                         0.009            
+##                                   (0.072)           
+##                                                     
+## bathrooms1.25                      0.062            
+##                                   (0.104)           
+##                                                     
+## bathrooms1.5                      -0.005            
+##                                   (0.072)           
+##                                                     
+## bathrooms1.75                     -0.002            
+##                                   (0.072)           
+##                                                     
+## bathrooms2                         0.002            
+##                                   (0.072)           
+##                                                     
+## bathrooms2.25                      0.006            
+##                                   (0.072)           
+##                                                     
+## bathrooms2.5                       0.017            
+##                                   (0.072)           
+##                                                     
+## bathrooms2.75                      0.037            
+##                                   (0.072)           
+##                                                     
+## bathrooms3                         0.057            
+##                                   (0.072)           
+##                                                     
+## bathrooms3.25                     0.146**           
+##                                   (0.072)           
+##                                                     
+## bathrooms3.5                      0.137*            
+##                                   (0.072)           
+##                                                     
+## bathrooms3.75                    0.215***           
+##                                   (0.074)           
+##                                                     
+## bathrooms4                        0.174**           
+##                                   (0.074)           
+##                                                     
+## bathrooms4.25                    0.259***           
+##                                   (0.076)           
+##                                                     
+## bathrooms4.5                      0.175**           
+##                                   (0.075)           
+##                                                     
+## bathrooms4.75                    0.319***           
+##                                   (0.086)           
+##                                                     
+## bathrooms5                       0.310***           
+##                                   (0.087)           
+##                                                     
+## bathrooms5.25                    0.352***           
+##                                   (0.095)           
+##                                                     
+## bathrooms5.5                     0.562***           
+##                                   (0.101)           
+##                                                     
+## bathrooms5.75                     0.318**           
+##                                   (0.134)           
+##                                                     
+## bathrooms6                       0.498***           
+##                                   (0.117)           
+##                                                     
+## bathrooms6.25                    0.558***           
+##                                   (0.175)           
+##                                                     
+## bathrooms6.5                      0.331*            
+##                                   (0.175)           
+##                                                     
+## bathrooms6.75                      0.073            
+##                                   (0.175)           
+##                                                     
+## bathrooms7.5                      -0.325            
+##                                   (0.236)           
+##                                                     
+## bathrooms7.75                    1.007***           
+##                                   (0.236)           
+##                                                     
+## bathrooms8                        0.369**           
+##                                   (0.175)           
+##                                                     
+## `log of sqft_living`             0.257***           
+##                                   (0.016)           
+##                                                     
+## `log of sqft_lot`                0.032***           
+##                                   (0.004)           
+##                                                     
+## floors1.5                          0.004            
+##                                   (0.006)           
+##                                                     
+## floors2                          0.015***           
+##                                   (0.005)           
+##                                                     
+## floors2.5                        0.073***           
+##                                   (0.019)           
+##                                                     
+## floors3                          0.098***           
+##                                   (0.011)           
+##                                                     
+## floors3.5                         0.144*            
+##                                   (0.080)           
+##                                                     
+## waterfront1                      0.413***           
+##                                   (0.022)           
+##                                                     
+## view1                            0.171***           
+##                                   (0.013)           
+##                                                     
+## view2                            0.155***           
+##                                   (0.008)           
+##                                                     
+## view3                            0.229***           
+##                                   (0.010)           
+##                                                     
+## view4                            0.356***           
+##                                   (0.016)           
+##                                                     
+## condition2                       0.168***           
+##                                   (0.045)           
+##                                                     
+## condition3                       0.330***           
+##                                   (0.041)           
+##                                                     
+## condition4                       0.347***           
+##                                   (0.041)           
+##                                                     
+## condition5                       0.419***           
+##                                   (0.042)           
+##                                                     
+## `log of sqft_above`              0.273***           
+##                                   (0.016)           
+##                                                     
+## `log of sqft_living15`           0.177***           
+##                                   (0.008)           
+##                                                     
+## `log of sqft_lot15`              -0.044***          
+##                                   (0.005)           
+##                                                     
+## bsmt1                            0.086***           
+##                                   (0.007)           
+##                                                     
+## renovated1                       0.060***           
+##                                   (0.008)           
+##                                                     
+## areaWealth2                      0.254***           
+##                                   (0.005)           
+##                                                     
+## areaWealth3                      0.437***           
+##                                   (0.005)           
+##                                                     
+## areaWealth4                      0.653***           
+##                                   (0.005)           
+##                                                     
+## areaWealth5                      0.809***           
+##                                   (0.006)           
+##                                                     
+## age                              0.002***           
+##                                  (0.0001)           
+##                                                     
+## Constant                         6.921***           
+##                                   (0.096)           
+##                                                     
+## ----------------------------------------------------
+## Observations                      21,613            
+## R2                                 0.819            
+## Adjusted R2                        0.819            
+## Residual Std. Error         0.224 (df = 21557)      
+## F Statistic            1,773.384*** (df = 55; 21557)
+## ====================================================
+## Note:                    *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+</div>
+<div id="residual-analysis" class="section level4">
+<h4>3.Residual analysis</h4>
+<p>–I have not yet learnt in depth about analysing residuals to check regression assumptions but from intuition and self education these are the comments I have made –</p>
+<p>I will plot the residuals againts the fitted values of my model to check for any non normality or signs of heteroskedasticity.</p>
+<pre class="r"><code>#plot residuals against fitted values
+#
+ggplot(mod2) + 
+  geom_point(aes(x = .fitted, y =  .resid), alpha =  0.25) +
+  geom_hline(yintercept = 0, colour  = &quot;red&quot;, size = 1) +
+  labs(x = &quot;fitted values&quot;, y = &quot;residuals&quot;, title  = &quot;Residual plot against fitted values&quot;, 
+       subtitle = &quot;Model 2&quot;) + 
+  theme(plot.title = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>I cannot see any obvious patterns/signs so I will use a quartile-quartile plot to see how normal the residuals are.</p>
+<pre class="r"><code>#qqplot for model 2
+#
+qplot(sample = .stdresid, data  =  mod2,  stat = &#39;qq&#39;, alpha  = 0.5)  + 
+  geom_abline(size = 1, colour  = &quot;red&quot;) +
+  labs(x = &quot;theoreticals&quot;, y = &quot;standardized residuals&quot;, 
+       title  = &quot;Quartile-Quartile plot for the standardised residuals of model 2&quot;) +
+  theme(legend.position = &quot;none&quot;,  
+        plot.title = element_text(face= &quot;bold&quot;))</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>From looking at this plot I can see that the residuals conform more to normality around the median points and have heavier tails. From research I have done I suspect that this means that my residuals suffer from kurtosis, however, I am yet to fully understand the implications of this.</p>
+<p>To see if any explanation of the dependent variable has been lost due to the omission of the variables grade and bathrooms I will plot the residuals against these variables to see if I can spot any patterns.</p>
+<pre class="r"><code>houseMod$resid &lt;- mod2$residuals
+
+#plot residuals against grade
+#
+houseMod%&gt;%ggplot(aes(x = grade, y = resid)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, colour  = &quot;red&quot;, size = 1) + 
+  labs(x = &quot;Grade&quot;, y = &quot;Residuals&quot;)</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<pre class="r"><code>#plot residuals against bathrooms
+#
+houseMod%&gt;%ggplot(aes(x = bathrooms, y = resid)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, colour  = &quot;red&quot;, size = 1) + 
+  labs(x = &quot;Bathrooms&quot;, y = &quot;Residuals&quot;)</code></pre>
+<p><img src="multiregression_files/figure-html/unnamed-chunk-24-2.png" width="672" /></p>
+<p>It is clear that from plotting the residuals against the grade given to the house that as the grade increases the residuals are less negative. From what I have observed from this I can claim that the covariance between the residuals and the grade given to the house is not equal to zero and can now more confidently say that the omission of the measurement of the grade of the house has led to omitted variable bias in my model.</p>
+<p>–31/5/2020–</p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

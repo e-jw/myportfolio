@@ -1,0 +1,408 @@
+---
+title: "Multivariate Regression"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    #code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+```
+
+
+
+# **Multiple linear regression of the prices of houses in King County, USA.**  
+## *By Elias Wilson*  
+
+I am an economics student at the University of Bristol and I have created this project to practice and display some of the skills I have learned in my first year econometrics classes. I will be using a dataset to infer how the prices of houses in King County, USA. have been generated.
+
+#### 1. Load data and packages then explore
+
+```{r, message=FALSE, warning=FALSE}
+#import libraries
+#
+library(tidyverse) 
+library(gridExtra)
+library(corrplot)
+library(RColorBrewer)
+library(stargazer)
+library(usdm)
+
+```
+
+```{r, message=FALSE}
+##load in data
+#
+house <- read_csv("kc_house_data.csv")
+glimpse(house)
+```
+
+We can see that the dataset has 21 variables and 21,613 observations. Most of the variable names are self explanotary (i.e. bedrooms and bathrooms) but some data, such as those presumably measuring square footage, are not so clear. 
+
+From looking at the [metadata of the dataset](https://info.kingcounty.gov/assessor/esales/Glossary.aspx?type=r), I found that: sqft_lot measures the square footage of the land space; sqft_living measures the square footage of interior living space; sqft_above measures interior housing space that is above ground level
+and all variables with 15 at the end are those measurements from the 15 nearest neighbours to the house.
+
+
+Before proceeding to look anymore at the data I will check to see if there are any NA values in the 
+data. 
+```{r}
+#check variables for NA values
+#
+for(x in 1:ncol(house)){
+  naTable = table(is.na(house[[x]]))
+  if(!is.na(naTable[2])){
+    print(colnames(house)[x])
+  }
+} 
+```
+
+
+Since no column names were returned I will start to look at the distribution of the variables.
+```{r}
+#look at distribution of dependent variable
+#
+house%>%ggplot(aes(x = price)) + 
+  geom_density(fill = "#66CC00") + 
+  labs(x = "Price", y = "Density", title = "Density plot of price", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+```
+
+```{r}
+#density of square footage of house variables
+#
+sqftLivingDensity <- house%>%ggplot(aes(x = sqft_living)) + 
+  geom_density(fill = "009999") +
+  labs(x = "Square footage of living area", title  = "Density of living area SF", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+sqftLotDensity <- house%>%ggplot(aes(x = sqft_lot)) + 
+  geom_density(fill = "#0066CC") +
+  labs(x = "Square footage of land space area", title  = "Density plot of land space SF", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+sqftAbvDensity <- house%>%ggplot(aes(x = sqft_above)) + 
+  geom_density(fill = "#CC00CC") +
+  labs(x = "Square footage of space above ground", title  = "Density plot of above ground SF variable", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+sqftBsmtDensity <- house%>%ggplot(aes(x = sqft_basement)) + 
+  geom_density(fill = "#00CCCC") +
+  labs(x = "Square footage of basement", title  = "Density plot of basement SF", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+grid.arrange(sqftAbvDensity, sqftBsmtDensity, sqftLivingDensity, sqftLotDensity, ncol = 2)
+```
+
+
+The density plot for the square footage of the basement looks odd, this is most likely caused by a measurement of 0 for houses without a basement. After a closer look I discovered that there were observations without a basement.
+
+After removing the observations without a basement the density plot looks like this.
+```{r}
+house%>%filter(sqft_basement > 0)%>%
+  ggplot(aes(x = sqft_basement)) + 
+  geom_density(fill = "#00CCCC") +
+  labs(x = "Square footage of basement", title  = "Density plot of basement SF", 
+       subtitle = "Observations without basement removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+```
+
+
+Since the square footage of the basement contains 0 values I would not be able to perform a log transformation to the skewed distribution. Also there is a good chance that this variable will be correlated with other square footage variables in the dataset which would cause problems in the regression, so I will drop it.
+
+However, I will try to capture some of the variance by creating a dummy variable indicating whether the house has a basement or not. 
+```{r}
+house <- house%>%mutate(bsmt = ifelse(sqft_basement > 0, 1, 0))
+
+house$sqft_basement <- NULL
+```
+
+
+I suspect that because not all houses will be renovated so a similar approach can be taken with the variable yr_renovated. 
+
+I found that `r round(table(house$yr_renovated)[1]/nrow(house)*100, 2)`% of the observations have not been renovated and have a 0 value for this variable.
+```{r}
+house <- house%>%mutate(renovated = ifelse(yr_renovated  == 0, 0, 1))
+
+house$yr_renovated <- NULL
+```
+
+
+From looking at this newly created variable we can see that houses that have been renovated are on average more expensive than those that have not. 
+```{r}
+house%>%group_by(renovated)%>%
+  summarise(avePrice = mean(price))%>%
+  ggplot(aes(x = as.factor(renovated), y = avePrice, fill = as.factor(renovated))) + 
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#00CCCC", "#0066CC")) +
+  labs(x = "Renovated", y = "Mean price", 
+       title = "Price difference of houses 
+that have been renovated") +
+  theme(legend.position = "none", 
+        plot.title = element_text(face = "bold", size  = 20))
+```
+
+
+Now I will look at the density plots of the square footage of the nearest 15 neighbours to see if it follows a similar trend.
+```{r}
+#density of square footage of nearest 15 houses
+#
+sqftLiving15Density <- house%>%ggplot(aes(x = sqft_living15)) + 
+  geom_density(fill = "009999") +
+  labs(x = "Square footage of living area", 
+       title  = "Density plot of living area 
+SF of neighbours", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+sqftLot15Density <- house%>%ggplot(aes(x = sqft_lot15)) + 
+  geom_density(fill = "#0066CC") +
+  labs(x = "Square footage of land space area", 
+       title  = "Density plot of land space 
+SF of neighbours", 
+       subtitle = "No data removed") +
+  theme(plot.title = element_text(face = "bold"))
+
+grid.arrange(sqftLiving15Density, sqftLot15Density, ncol = 2) 
+```
+
+
+Looks like these variables follow the same right skewed distribution as the other square footage variables.
+
+I am going to drop the date variable as well as longitude and latitude variable. 
+
+I think that I may be able to derive a variable that measures the price of houses in different areas, I will look into this by examining the zipcodes of the houses. 
+```{r, fig.height=10}
+#drop date, long and lat
+#
+house$date <- NULL
+house[, c("long", "lat")] <- NULL
+
+
+house%>%ggplot(aes(x = as.factor(reorder(zipcode, price, FUN = median)), y = price)) + 
+  geom_boxplot(colour = "#606060", 
+               outlier.alpha = 0.25, 
+               outlier.color = "#CCCCFF") + 
+  scale_y_continuous(breaks = seq(from = 0, to = max(house$price), by = max(house$price)/10)) + 
+  labs(x = "Zipcode", y = "Price", title = "Different price distributions by zipcode", 
+       subtitle = "80 zipcodes") + 
+  theme(plot.title = element_text(face = "bold")) + coord_flip()
+```
+
+
+There looks like there is a trend that some areas are richer than others. I will create a rank of how wealthy the area is.
+```{r}
+#create a dummy variable for rank of area
+#
+zipRank <- house%>%group_by(as.factor(zipcode))%>%
+  summarise(medianPrice = median(price))%>%arrange(desc(medianPrice))
+
+zipRank$areaWealth <- c(rep(5, 14), rep(4, 14), rep(3, 14), rep(2, 14), rep(1, 14)) 
+colnames(zipRank)[1] <- "zipcode"
+
+house <- merge(house, zipRank, by = "zipcode")
+house$medianPrice <- NULL
+house$zipcode <- NULL
+```
+
+
+Now I will take a look at the relationship that the number of bedrooms and bathrooms have with the price of
+the house. 
+```{r, figheight=5}
+bedroomBox <- house%>%ggplot(aes(x = as.factor(bedrooms), y = price)) + 
+  geom_boxplot(colour = "#606060", 
+               outlier.alpha = 0.75, 
+               outlier.color = "#CCCCFF") + 
+  labs(title = "Number of bedrooms 
+relationship with price", 
+       x = "No. of bedrooms", y = "Price") + 
+  theme(plot.title = element_text(face = "bold")) + coord_flip()
+
+bathroomBox <- house%>%ggplot(aes(x = as.factor(bathrooms), y = price)) + 
+  geom_boxplot(colour = "#606060", 
+               outlier.alpha = 0.5, 
+               outlier.color = "#CCCCFF") + 
+  labs(title = "Number of bathrroms 
+relationship with price", 
+       x = "No. of bathrooms", y = "Price") + 
+  theme(plot.title = element_text(face = "bold")) + coord_flip()
+
+grid.arrange(bedroomBox, bathroomBox, ncol = 2)
+```
+
+
+There is house with 33 bedrooms which sold for a relatively low price considering a house like that must be quite large in size. It is possible that this is a data entry error so I will take a look at the individual observation.
+
+After looking at the observation I think that this value was supposed to be a 3 as the mean square footage of the living area for a 3 bedroom house fits similarly with our 33 bedroom observation as do other properties. 
+
+```{r}
+house[house$bedrooms == 33, "bedrooms"] <- 3
+```
+
+
+I am going to use  the yr_built variable to engineer an age variable for the house, this will make this propert a continuous variable which is easier to interpret. I will have to omit  the variable  yr_built as age will be a linear combination of yr_built which will cause perfect multicollinearity. 
+```{r}
+#the most recent year a house was built was 2015 so to make age subtract yr_built from 2015
+#
+house$age <- 2015 - house$yr_built
+house$yr_built <- NULL
+
+```
+
+
+
+#### 2.Variable selection and Model 
+
+
+Price and variables that measure square footage have a right skew so would benefit from being transformed and would be easily interpreted if they were log transformed. 
+```{r}
+#make copy of dataset before manipulating
+#
+houseMod <- house
+
+#log variables
+#
+houseMod$price <- log(house$price)
+colnames(houseMod)[2] <- "log of price"
+
+sqftVars <- grep("^sqft", colnames(houseMod))
+
+houseMod[, sqftVars] <- log(houseMod[, sqftVars])
+colnames(houseMod) <- gsub("sqft", "log of sqft", colnames(houseMod))
+```
+
+
+Now the data has been transformed I can look at the correlations that the dependent variables have with the independent variable and eachother. 
+```{r, fig.width=10}
+#make correlation matrix
+#
+cor <- cor(houseMod[, -1])
+
+#plot correlations
+#
+corrplot(cor, method = "shade", type = "upper", 
+                       tl.cex = 0.5, tl.col = "black",
+                       cl.cex = 0.5, cl.pos = "r", 
+                       col = brewer.pal(n = 8, name = "BuPu"), 
+                       addCoef.col = "black", number.cex = 0.5)
+```
+
+
+We can see from the correlation matrix that some predictor variables have strong correlations with eachother. I will use the Variance inflation factors to look for multicollinearity.
+
+If I were to omit these variables then my model would suffer from omitted variable bias so I will leave them as possible candidates to interpret price. As these variables are multicollinear this will make our coefficients have a greater standard error and therefore more unreliable. 
+```{r}
+#find the VIF of variables to determine which variables are multicollinear (>4)
+#
+vif(houseMod[, -c(1, 2)])%>%filter(VIF > 4)
+
+```
+
+
+
+```{r}
+#turn neccessary variables into factors
+#
+nonFactors <- grep("^log of", colnames(houseMod))
+nonFactors <- c(18, nonFactors)
+
+houseMod[, -nonFactors] <- lapply(houseMod[, -nonFactors], as.factor)
+glimpse(houseMod)
+
+#delete id variable
+#
+houseMod[, 1] <- NULL
+```
+
+
+Now I will make a model with all variables in and look at the summary statistics.
+```{r}
+#create  model
+#
+mod1 <- lm(`log of price`~., houseMod)
+stargazer(mod1, type = "text")
+```
+
+From these statistics I can see that bathrooms and grade variables have a large majority of their dummy variables labelled as statistically insignificant at the 5% level. It should also be noted that the more significant dummy variables created from these measurements tend to be at the more extreme observations (i.e. grade 13 is the top grade and the most statistcally significant and the more bathrooms the more significant the measure tends to be). 
+
+I will try to model the log of price without these variables in but as the data suffers from multicollinearity the likeliness of making a type 2 error is high as I would suspect that these  two variables would usually be good predictors of house price. One way I could increase my confidence in variable selection would be to increase the number of observations I have which would decrease the standard error, however, sadly I cannot with this dataset. 
+```{r}
+#create second model excluding grade and bedrooms
+#
+mod2 <- lm(`log of price`~.-bedrooms -grade, houseMod)
+stargazer(mod2, type ="text")
+```
+
+
+
+#### 3.Residual analysis
+
+
+--I have not yet learnt in depth about analysing residuals to check regression assumptions but from intuition and self education these are the comments I have made --
+
+
+I will plot the residuals againts the fitted values of my model to check for any non normality or signs of heteroskedasticity. 
+```{r}
+#plot residuals against fitted values
+#
+ggplot(mod2) + 
+  geom_point(aes(x = .fitted, y =  .resid), alpha =  0.25) +
+  geom_hline(yintercept = 0, colour  = "red", size = 1) +
+  labs(x = "fitted values", y = "residuals", title  = "Residual plot against fitted values", 
+       subtitle = "Model 2") + 
+  theme(plot.title = element_text(face = "bold"))
+```
+
+
+I cannot see any obvious patterns/signs so I will use a quartile-quartile plot to see how normal the residuals are. 
+```{r, warning=FALSE}
+#qqplot for model 2
+#
+qplot(sample = .stdresid, data  =  mod2,  stat = 'qq', alpha  = 0.5)  + 
+  geom_abline(size = 1, colour  = "red") +
+  labs(x = "theoreticals", y = "standardized residuals", 
+       title  = "Quartile-Quartile plot for the standardised residuals of model 2") +
+  theme(legend.position = "none",  
+        plot.title = element_text(face= "bold"))
+```
+
+From looking at this plot I can see that the residuals conform more to normality around the median points and have heavier tails. From research I have done I suspect that this means that my residuals suffer from kurtosis, however, I am yet to fully understand the implications of this.
+
+
+To see if any explanation of the dependent variable has been lost due to the omission of the variables grade and bathrooms I will plot the residuals against these variables to see if I can spot any patterns.
+```{r}
+houseMod$resid <- mod2$residuals
+
+#plot residuals against grade
+#
+houseMod%>%ggplot(aes(x = grade, y = resid)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, colour  = "red", size = 1) + 
+  labs(x = "Grade", y = "Residuals")
+
+#plot residuals against bathrooms
+#
+houseMod%>%ggplot(aes(x = bathrooms, y = resid)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, colour  = "red", size = 1) + 
+  labs(x = "Bathrooms", y = "Residuals")
+```
+
+It is clear that from plotting the residuals against the grade given to the house that as the grade increases the residuals are less negative. From what I have observed from this I can claim that the covariance between the residuals and the grade given to the house is not equal to zero and can now more confidently say that the omission of the measurement of the grade of the house has led to omitted variable bias in my model.
+
+--31/5/2020--
+
+
+
+
