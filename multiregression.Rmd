@@ -16,12 +16,12 @@ knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 
 
 
-# **Multiple linear regression of the prices of houses in King County, USA.**  
+## **Multiple linear regression of the prices of houses in King County, USA.**  
 ## *By Elias Wilson*  
 
 I am an economics student at the University of Bristol and I have created this project to practice and display some of the skills I have learned in my first year econometrics classes. I will be using a dataset to infer how the prices of houses in King County, USA. have been generated.
 
-#### 1. Load data and packages then explore
+# 1. Load data and packages then explore
 
 ```{r, message=FALSE, warning=FALSE}
 #import libraries
@@ -262,7 +262,7 @@ house$yr_built <- NULL
 
 
 
-#### 2.Variable selection and Model 
+# 2.Variable selection and Model 
 
 
 Price and variables that measure square footage have a right skew so would benefit from being transformed and would be easily interpreted if they were log transformed. 
@@ -346,7 +346,7 @@ stargazer(mod2, type ="text")
 
 
 
-#### 3.Residual analysis
+# 3.Residual analysis
 
 
 --I have not yet learnt in depth about analysing residuals to check regression assumptions but from intuition and self education these are the comments I have made --
