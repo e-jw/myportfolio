@@ -373,13 +373,15 @@ div.tocify {
 </div>
 
 
-<div id="multiple-linear-regression-of-the-prices-of-houses-in-king-county-usa." class="section level1">
-<h1><strong>Multiple linear regression of the prices of houses in King County, USA.</strong></h1>
+<div id="multiple-linear-regression-of-the-prices-of-houses-in-king-county-usa." class="section level2">
+<h2><strong>Multiple linear regression of the prices of houses in King County, USA.</strong></h2>
+</div>
 <div id="by-elias-wilson" class="section level2">
 <h2><em>By Elias Wilson</em></h2>
 <p>I am an economics student at the University of Bristol and I have created this project to practice and display some of the skills I have learned in my first year econometrics classes. I will be using a dataset to infer how the prices of houses in King County, USA. have been generated.</p>
-<div id="load-data-and-packages-then-explore" class="section level4">
-<h4>1. Load data and packages then explore</h4>
+</div>
+<div id="load-data-and-packages-then-explore" class="section level1">
+<h1>1. Load data and packages then explore</h1>
 <pre class="r"><code>#import libraries
 #
 library(tidyverse) 
@@ -575,8 +577,8 @@ grid.arrange(bedroomBox, bathroomBox, ncol = 2)</code></pre>
 house$age &lt;- 2015 - house$yr_built
 house$yr_built &lt;- NULL</code></pre>
 </div>
-<div id="variable-selection-and-model" class="section level4">
-<h4>2.Variable selection and Model</h4>
+<div id="variable-selection-and-model" class="section level1">
+<h1>2.Variable selection and Model</h1>
 <p>Price and variables that measure square footage have a right skew so would benefit from being transformed and would be easily interpreted if they were log transformed.</p>
 <pre class="r"><code>#make copy of dataset before manipulating
 #
@@ -1087,8 +1089,8 @@ stargazer(mod2, type =&quot;text&quot;)</code></pre>
 ## ====================================================
 ## Note:                    *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
 </div>
-<div id="residual-analysis" class="section level4">
-<h4>3.Residual analysis</h4>
+<div id="residual-analysis" class="section level1">
+<h1>3.Residual analysis</h1>
 <p>–I have not yet learnt in depth about analysing residuals to check regression assumptions but from intuition and self education these are the comments I have made –</p>
 <p>I will plot the residuals againts the fitted values of my model to check for any non normality or signs of heteroskedasticity.</p>
 <pre class="r"><code>#plot residuals against fitted values
@@ -1130,8 +1132,6 @@ houseMod%&gt;%ggplot(aes(x = bathrooms, y = resid)) +
 <p><img src="multiregression_files/figure-html/unnamed-chunk-24-2.png" width="672" /></p>
 <p>It is clear that from plotting the residuals against the grade given to the house that as the grade increases the residuals are less negative. From what I have observed from this I can claim that the covariance between the residuals and the grade given to the house is not equal to zero and can now more confidently say that the omission of the measurement of the grade of the house has led to omitted variable bias in my model.</p>
 <p>–31/5/2020–</p>
-</div>
-</div>
 </div>
 
 
