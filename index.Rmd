@@ -34,5 +34,10 @@ Studying econometrics means I focus on discovering causal relationships and test
 <div class="col-sm-6">
 
 ![](images/world.png)
+
+[Twitter](https://twitter.com/e_liaswilson)
+[Linkedin](https://www.linkedin.com/in/elias-wilson-324685189/)
+[GitHub](https://github.com/e-jw)
+
 </a>
 </div>
