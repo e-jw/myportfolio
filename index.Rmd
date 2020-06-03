@@ -1,5 +1,5 @@
 ---
-title: "MyLabJournal"
+title: "My Portfolio"
 output: html_document
 ---
 
@@ -17,19 +17,17 @@ output: html_document
 <div class="row" style="padding-top: 30px;">
 <div class="col-sm-6">
 
-# **My Lab Journal**
+# **Elias Wilson**
 
-This is a template example for lab journaling. Students in Matt Crump's Human Cognition and Performance Lab will use this template to learn R, and other things. Students can replace this text with more fun things. People not in my lab can use this too.
+I am a 20 year old Bsc Economics candidate at the University of Bristol and I am using this website to host any projects that I make. 
 
-## How to use
+## About
 
-1. fork the repo for this website and follow instructions on read me to get set up. [https://github.com/CrumpLab/LabJournalWebsite](https://github.com/CrumpLab/LabJournalWebsite)
+My interests include statistics, econometrics, macroeconomics and game theory. 
 
-2. Blog/journal what you are doing in R, by editing the Journal.Rmd. See the [Journal page](https://crumplab.github.io/LabJournalWebsite/Journal.html) for an example of what to do to get started learning R.
+I have been teaching myself the R programming language for close to two years and I am familiar with the wide range of resources and the community surrounding R.
 
-3. See the [links page](https://crumplab.github.io/LabJournalWebsite/Links.html) for lots of helpful links on learning R.
-
-4. Change everything to make it your own.
+Studying econometrics means I focus on discovering causal relationships and testing theory, however, I am also also interested in, and read about, predictive modelling and machine learning.
 
 
 </div>
