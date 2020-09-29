@@ -23,17 +23,13 @@ I am a 20 year old Bsc Economics candidate at the University of Bristol and I am
 
 ## About
 
-My interests include statistics, econometrics, macroeconomics and game theory. 
+My interests include statistics, econometrics, microeconomics and game theory. 
 
 I have been teaching myself the R programming language for close to two years and I am familiar with the wide range of resources and the community surrounding R.
 
 Studying econometrics means I focus on discovering causal relationships and testing theory, however, I am also interested in, and read about, predictive modelling and machine learning.
 
-[Twitter](https://twitter.com/e_liaswilson)
-
-[Linkedin](https://www.linkedin.com/in/elias-wilson-324685189/)
-
-[GitHub](https://github.com/e-jw)
+[Twitter](https://twitter.com/e_liaswilson) [Linkedin](https://www.linkedin.com/in/elias-wilson-324685189/) [GitHub](https://github.com/e-jw)
 
 
 </div>
