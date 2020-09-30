@@ -29,7 +29,9 @@ I have been teaching myself the R programming language for close to two years an
 
 Studying econometrics means I focus on discovering causal relationships and testing theory, however, I am also interested in, and read about, predictive modelling and machine learning.
 
-[Twitter](https://twitter.com/e_liaswilson) [Linkedin](https://www.linkedin.com/in/elias-wilson-324685189/) [GitHub](https://github.com/e-jw)
+[Twitter](https://twitter.com/e_liaswilson) 
+[Linkedin](https://www.linkedin.com/in/elias-wilson-324685189/) 
+[GitHub](https://github.com/e-jw)
 
 
 </div>
