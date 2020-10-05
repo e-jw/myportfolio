@@ -535,14 +535,15 @@ house%&gt;%ggplot(aes(x = as.factor(reorder(zipcode, price, FUN = median)), y = 
        subtitle = &quot;80 zipcodes&quot;) + 
   theme(plot.title = element_text(face = &quot;bold&quot;)) + coord_flip()</code></pre>
 <p><img src="multiregression_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
-<p>There looks like there is a trend that some areas are richer than others. I will create a rank of how wealthy the area is.</p>
+<p>There looks like there is a trend that some areas are richer than others. I will create a rank of how wealthy the area is by how mamy standard deviations the median price is from the average.</p>
 <pre class="r"><code>#create a dummy variable for rank of area
 #
 zipRank &lt;- house%&gt;%group_by(as.factor(zipcode))%&gt;%
   summarise(medianPrice = median(price))%&gt;%arrange(desc(medianPrice))
 
-zipRank$areaWealth &lt;- c(rep(5, 14), rep(4, 14), rep(3, 14), rep(2, 14), rep(1, 14)) 
 colnames(zipRank)[1] &lt;- &quot;zipcode&quot;
+
+zipRank &lt;- zipRank%&gt;%mutate(rank = ifelse(medianPrice - mean(medianPrice) &lt; -sd(medianPrice), 1, ifelse(medianPrice - mean(medianPrice) &gt; sd(medianPrice), 3, 2)))
 
 house &lt;- merge(house, zipRank, by = &quot;zipcode&quot;)
 house$medianPrice &lt;- NULL
