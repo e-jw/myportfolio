@@ -77,29 +77,24 @@ house%>%ggplot(aes(x = price)) +
 ```{r}
 #density of square footage of house variables
 #
-sqftLivingDensity <- house%>%ggplot(aes(x = sqft_living)) + 
-  geom_density(fill = "009999") +
-  labs(x = "Square footage of living area", title  = "Density of living area SF", 
-       subtitle = "No data removed") +
-  theme(plot.title = element_text(face = "bold"))
 
-sqftLotDensity <- house%>%ggplot(aes(x = sqft_lot)) + 
-  geom_density(fill = "#0066CC") +
-  labs(x = "Square footage of land space area", title  = "Density plot of land space SF", 
+density <- function(var, fill, title, xlab){
+  house%>%ggplot(aes(x = var)) + 
+  geom_density(fill = fill) +
+  labs(x = xlab, title  = title, 
        subtitle = "No data removed") +
   theme(plot.title = element_text(face = "bold"))
+}
 
-sqftAbvDensity <- house%>%ggplot(aes(x = sqft_above)) + 
-  geom_density(fill = "#CC00CC") +
-  labs(x = "Square footage of space above ground", title  = "Density plot of above ground SF variable", 
-       subtitle = "No data removed") +
-  theme(plot.title = element_text(face = "bold"))
 
-sqftBsmtDensity <- house%>%ggplot(aes(x = sqft_basement)) + 
-  geom_density(fill = "#00CCCC") +
-  labs(x = "Square footage of basement", title  = "Density plot of basement SF", 
-       subtitle = "No data removed") +
-  theme(plot.title = element_text(face = "bold"))
+sqftLivingDensity <- density(house$sqft_living, fill = "#009999", title = "Density of living area SF", xlab = "Square footage of living area")
+
+sqftLotDensity <- density(house$sqft_lot, fill = "#0066CC", title = "Density plot of land space SF", xlab = "Square footage of land space area")
+  
+ sqftAbvDensity <- density(house$sqft_above, fill = "#CC00CC", title = "Density plot of above ground SF variable", xlab = "Square footage of space above ground")
+  
+
+sqftBsmtDensity <- density(house$sqft_basement, fill = "#00CCCC", title = "Density plot of basement SF", xlab = "Square footage of basement")
 
 grid.arrange(sqftAbvDensity, sqftBsmtDensity, sqftLivingDensity, sqftLotDensity, ncol = 2)
 ```
@@ -158,21 +153,10 @@ Now I will look at the density plots of the square footage of the nearest 15 nei
 ```{r}
 #density of square footage of nearest 15 houses
 #
-sqftLiving15Density <- house%>%ggplot(aes(x = sqft_living15)) + 
-  geom_density(fill = "009999") +
-  labs(x = "Square footage of living area", 
-       title  = "Density plot of living area 
-SF of neighbours", 
-       subtitle = "No data removed") +
-  theme(plot.title = element_text(face = "bold"))
+sqftLiving15Density <- density(house$sqft_living15, fill = "#009999", title = "Density of living area SF of neighbours", xlab = "Square footage of living area")
 
-sqftLot15Density <- house%>%ggplot(aes(x = sqft_lot15)) + 
-  geom_density(fill = "#0066CC") +
-  labs(x = "Square footage of land space area", 
-       title  = "Density plot of land space 
-SF of neighbours", 
-       subtitle = "No data removed") +
-  theme(plot.title = element_text(face = "bold"))
+sqftLot15Density <- density(house$sqft_lot15, fill = "#0066CC", title = "Density plot of land space 
+SF of neighbours", xlab = "Square footage of land space area")
 
 grid.arrange(sqftLiving15Density, sqftLot15Density, ncol = 2) 
 ```

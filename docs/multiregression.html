@@ -439,29 +439,24 @@ house%&gt;%ggplot(aes(x = price)) +
 <p><img src="multiregression_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <pre class="r"><code>#density of square footage of house variables
 #
-sqftLivingDensity &lt;- house%&gt;%ggplot(aes(x = sqft_living)) + 
-  geom_density(fill = &quot;009999&quot;) +
-  labs(x = &quot;Square footage of living area&quot;, title  = &quot;Density of living area SF&quot;, 
-       subtitle = &quot;No data removed&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;))
 
-sqftLotDensity &lt;- house%&gt;%ggplot(aes(x = sqft_lot)) + 
-  geom_density(fill = &quot;#0066CC&quot;) +
-  labs(x = &quot;Square footage of land space area&quot;, title  = &quot;Density plot of land space SF&quot;, 
+density &lt;- function(var, fill, title, xlab){
+  house%&gt;%ggplot(aes(x = var)) + 
+  geom_density(fill = fill) +
+  labs(x = xlab, title  = title, 
        subtitle = &quot;No data removed&quot;) +
   theme(plot.title = element_text(face = &quot;bold&quot;))
+}
 
-sqftAbvDensity &lt;- house%&gt;%ggplot(aes(x = sqft_above)) + 
-  geom_density(fill = &quot;#CC00CC&quot;) +
-  labs(x = &quot;Square footage of space above ground&quot;, title  = &quot;Density plot of above ground SF variable&quot;, 
-       subtitle = &quot;No data removed&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;))
 
-sqftBsmtDensity &lt;- house%&gt;%ggplot(aes(x = sqft_basement)) + 
-  geom_density(fill = &quot;#00CCCC&quot;) +
-  labs(x = &quot;Square footage of basement&quot;, title  = &quot;Density plot of basement SF&quot;, 
-       subtitle = &quot;No data removed&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;))
+sqftLivingDensity &lt;- density(house$sqft_living, fill = &quot;#009999&quot;, title = &quot;Density of living area SF&quot;, xlab = &quot;Square footage of living area&quot;)
+
+sqftLotDensity &lt;- density(house$sqft_lot, fill = &quot;#0066CC&quot;, title = &quot;Density plot of land space SF&quot;, xlab = &quot;Square footage of land space area&quot;)
+  
+ sqftAbvDensity &lt;- density(house$sqft_above, fill = &quot;#CC00CC&quot;, title = &quot;Density plot of above ground SF variable&quot;, xlab = &quot;Square footage of space above ground&quot;)
+  
+
+sqftBsmtDensity &lt;- density(house$sqft_basement, fill = &quot;#00CCCC&quot;, title = &quot;Density plot of basement SF&quot;, xlab = &quot;Square footage of basement&quot;)
 
 grid.arrange(sqftAbvDensity, sqftBsmtDensity, sqftLivingDensity, sqftLotDensity, ncol = 2)</code></pre>
 <p><img src="multiregression_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
@@ -499,21 +494,10 @@ that have been renovated&quot;) +
 <p>Now I will look at the density plots of the square footage of the nearest 15 neighbours to see if it follows a similar trend.</p>
 <pre class="r"><code>#density of square footage of nearest 15 houses
 #
-sqftLiving15Density &lt;- house%&gt;%ggplot(aes(x = sqft_living15)) + 
-  geom_density(fill = &quot;009999&quot;) +
-  labs(x = &quot;Square footage of living area&quot;, 
-       title  = &quot;Density plot of living area 
-SF of neighbours&quot;, 
-       subtitle = &quot;No data removed&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;))
+sqftLiving15Density &lt;- density(house$sqft_living15, fill = &quot;#009999&quot;, title = &quot;Density of living area SF of neighbours&quot;, xlab = &quot;Square footage of living area&quot;)
 
-sqftLot15Density &lt;- house%&gt;%ggplot(aes(x = sqft_lot15)) + 
-  geom_density(fill = &quot;#0066CC&quot;) +
-  labs(x = &quot;Square footage of land space area&quot;, 
-       title  = &quot;Density plot of land space 
-SF of neighbours&quot;, 
-       subtitle = &quot;No data removed&quot;) +
-  theme(plot.title = element_text(face = &quot;bold&quot;))
+sqftLot15Density &lt;- density(house$sqft_lot15, fill = &quot;#0066CC&quot;, title = &quot;Density plot of land space 
+SF of neighbours&quot;, xlab = &quot;Square footage of land space area&quot;)
 
 grid.arrange(sqftLiving15Density, sqftLot15Density, ncol = 2) </code></pre>
 <p><img src="multiregression_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
