@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Visualisations, simple random forest</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="multiregression.html">Multivariate Regression</a>
+</li>
+<li>
+  <a href="randforest.html">Visualisations, simple random forest</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Visualisations, simple random forest</h1>
+
+</div>
+
+
+<div id="visualisations-on-student-performance-data-and-random-forest-classification" class="section level2">
+<h2><strong>Visualisations on student performance data and random forest classification</strong></h2>
+</div>
+<div id="by-elias-wilson" class="section level2">
+<h2><em>By Elias Wilson</em></h2>
+<p>I explore different social and academic variables of 1000 students and then use these variables in a classification problem to predict whether or not a student has had a test preperation course. I use a basic random forest algorithm from the caret package to make my predictions.</p>
+</div>
+<div id="load-data-and-packages-then-explore" class="section level1">
+<h1>1. Load data and packages then explore</h1>
+<pre class="r"><code>#load libraries
+#
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(gridExtra)
+library(caret)</code></pre>
+<pre class="r"><code>#load data
+#
+data &lt;- read.csv(&quot;StudentsPerformance.csv&quot;)
+
+glimpse(data)</code></pre>
+<pre><code>## Rows: 1,000
+## Columns: 8
+## $ gender                      &lt;chr&gt; &quot;female&quot;, &quot;female&quot;, &quot;female&quot;, &quot;male&quot;, &quot;ma…
+## $ race.ethnicity              &lt;chr&gt; &quot;group B&quot;, &quot;group C&quot;, &quot;group B&quot;, &quot;group A…
+## $ parental.level.of.education &lt;chr&gt; &quot;bachelor&#39;s degree&quot;, &quot;some college&quot;, &quot;mas…
+## $ lunch                       &lt;chr&gt; &quot;standard&quot;, &quot;standard&quot;, &quot;standard&quot;, &quot;free…
+## $ test.preparation.course     &lt;chr&gt; &quot;none&quot;, &quot;completed&quot;, &quot;none&quot;, &quot;none&quot;, &quot;non…
+## $ math.score                  &lt;int&gt; 72, 69, 90, 47, 76, 71, 88, 40, 64, 38, 5…
+## $ reading.score               &lt;int&gt; 72, 90, 95, 57, 78, 83, 95, 43, 64, 60, 5…
+## $ writing.score               &lt;int&gt; 74, 88, 93, 44, 75, 78, 92, 39, 67, 50, 5…</code></pre>
+<p>The lunch variable refers to whether or not a student was entitled to a free lunch so I will make the variable name more explicit. All variables apart from test scores are to be converted to factor variables. I will also turn binary variables to either 1 or 0.</p>
+<pre class="r"><code>data$test.preparation.course &lt;- ifelse(data$test.preparation.course == &quot;completed&quot;, 1, 0)
+
+colnames(data)[4] &lt;- &quot;free.lunch&quot;
+
+data$free.lunch &lt;- ifelse(data$free.lunch == &quot;free/reduced&quot;, 1, 0)
+
+data[, -c(6, 7, 8)] &lt;- lapply(data[, -c(6, 7, 8)], as.factor)</code></pre>
+<p>I will look at average test scores disparities between genders and then between genders in different racial groups.</p>
+<pre class="r"><code>#scores by gender
+#
+filtered &lt;- data%&gt;%group_by(gender, race.ethnicity)%&gt;%summarise(math = mean(math.score), 
+                                                                reading = mean(reading.score), 
+                                                                writing = mean(writing.score))%&gt;%ungroup()%&gt;%
+  gather(key = subject, value = ave.score, 3:5)
+
+
+byGender &lt;- filtered%&gt;%
+  ggplot(aes(x = subject, y = ave.score, fill = gender)) +
+  geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;) +
+  labs(title = &quot;Average test score aggregated by gender&quot;, y = &quot;Score&quot;, subtitle = &quot;sample size: 1000 students&quot;) + 
+  theme(plot.title = element_text(size = 15, face = &quot;bold&quot;))
+
+byGender</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>#scores by gender and race
+#
+byGender + facet_wrap(~race.ethnicity) + ggtitle(&quot;Average test score aggregated by gender and race/ethnicity&quot;)</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<p>There are no alarming disparities between genders however females perform better in reading and writing while males perform better in maths and this holds true aggregated across every racial group. It is hard to detect any great disparity between racial group so I will explore this further.</p>
+<pre class="r"><code>#scores by race 
+#
+filtered &lt;- data%&gt;%group_by(race.ethnicity)%&gt;%summarise(math = mean(math.score), 
+                                                        reading = mean(reading.score), 
+                                                        writing = mean(writing.score))%&gt;%
+  gather(key = &quot;subject&quot;, value = score, 2:4)%&gt;%ungroup()
+
+
+filtered%&gt;%ggplot(aes(x = race.ethnicity, y = score, fill = race.ethnicity)) +
+  geom_bar(stat = &quot;identity&quot;) + facet_wrap(~subject) + 
+  labs(title = &quot;Average test scores aggregated by race/ethnicity&quot;, subtitle = &quot;sample size: 1000 students&quot;, fill = &quot;Race/Ethnicity&quot;, x = &quot;&quot;) + 
+  theme(plot.title = element_text(size = 15, face = &quot;bold&quot;), axis.text.x = element_text(angle = 45))</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>#prep course by race</code></pre>
+<p>Ranking by test score has remained constant through all subjects between racial groups with group E performing best across all subjects and group A performing worst. I will now explore test prepatory courses by racial group to see if that aligns with these finding.</p>
+<pre class="r"><code>#prep course by race
+#
+data%&gt;%ggplot(aes(x = race.ethnicity, fill = as.factor(test.preparation.course))) + 
+  geom_bar(stat = &quot;count&quot;, position = &quot;dodge&quot;) + 
+  labs(x = &quot;Race/Ethnicity&quot;, fill = &quot;test prep course&quot;, title = &quot;Students who have had te preperation aggregated by race/ethnicity&quot;, subtitle = &quot;sample size: 1000 students&quot;) +
+  theme(plot.title = element_text(size = 12.5, face = &quot;bold&quot;))</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>data%&gt;%group_by(race.ethnicity)%&gt;%
+  summarise(count = n(), notTaken = sum(as.integer(test.preparation.course) == 1), percent = 1-notTaken/count)%&gt;%
+  ggplot(aes(x = reorder(race.ethnicity, percent), y = percent, fill = race.ethnicity)) + geom_bar(stat = &quot;identity&quot;) +
+  labs(x = &quot;race/ethnicity&quot;, y = &quot;% observed that took prep course&quot;, fill = &quot;race/ethnicity&quot;,
+       title = &quot;Percentage of people that took prep course aggregated by race&quot;, subtitle = &quot;sample size: 1000 students&quot;) + 
+  theme(plot.title = element_text(size = 15, face = &quot;bold&quot;))</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<p>The order has not stayed the same as group D were the second highest performer over all subjects but had the least percentage of students taking preperation courses. Group E have had the greatest percentage of students taking prep course with over 40%.</p>
+<p>As the ordering has not stayed the same I will look to see if the test prepaeratory course has any clear trend with grades</p>
+<pre class="r"><code>prepCourse &lt;- function(var, title){
+  data%&gt;%ggplot(aes(x = as.factor(test.preparation.course), y = var, fill = as.factor(test.preparation.course))) +
+    geom_boxplot() + 
+    labs(x = &#39;took prep course&#39;, y = &quot;score&quot;) + theme(legend.position = &quot;none&quot;) + 
+    ggtitle(title) + coord_flip() + theme(plot.title = element_text(face = &quot;bold&quot;))
+}
+
+prepMath &lt;- prepCourse(data$math.score, title = &quot;Math&quot;)
+prepWriting &lt;- prepCourse(data$writing.score, title = &quot;writing&quot;)
+prepReading &lt;- prepCourse(data$reading.score, title = &quot;reading&quot;)
+
+gridExtra::grid.arrange(prepMath, prepReading, prepWriting)</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Here in every subject the median score of those who took a prep coorse was higher than those who did not. There are also a greater number of outliers on average in the non prep course group.</p>
+<p>Next I will look if parental level of education has any trend with subject score.</p>
+<pre class="r"><code>#scores by parents education
+#
+filtered &lt;- data%&gt;%group_by(parental.level.of.education)%&gt;%summarise(math = mean(math.score), 
+                                                                     reading = mean(reading.score), 
+                                                                     writing = mean(writing.score))%&gt;%
+  gather(key = &quot;subject&quot;, value = &quot;score&quot;, 2:4)%&gt;%ungroup()
+
+
+filtered%&gt;%ggplot(aes(x = subject, y = score, fill = reorder(parental.level.of.education, score, FUN = mean)))+
+  geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;) + 
+  labs(title = &quot;Average subject scores aggregated by parental level of education&quot;, fill = &quot;parental level of education&quot;, y = &#39;average score&#39;) +
+  theme(plot.title = element_text(size = 15, face = &quot;bold&quot;))</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>The results again keep their order through each subject with students with parents who had a higher level of education performing better.</p>
+<p>Lastly I will look to see if there are any disparities in test scores between students who were entitled to a free school meal and those who were not.</p>
+<pre class="r"><code>#scores by free lunch
+#
+lunch &lt;- function(var, title){
+  data%&gt;%ggplot(aes(x = as.factor(free.lunch), y = var, fill = as.factor(free.lunch))) +
+    geom_boxplot() +
+    labs(x = &quot;free lunch&quot;, y = &quot;score&quot;) + theme(legend.position = &quot;none&quot;) + 
+    ggtitle(title) + coord_flip() + theme(plot.title = element_text(face = &quot;bold&quot;))
+}
+
+lunchMath &lt;- lunch(data$math.score, title = &quot;Math&quot;) 
+lunchWriting &lt;- lunch(data$writing.score, title = &quot;Writing&quot;) 
+lunchReading &lt;- lunch(data$reading.score, title = &quot;Reading&quot;) 
+
+gridExtra::grid.arrange(lunchMath, lunchWriting, lunchReading)</code></pre>
+<p><img src="randforest_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>The data shows that the median score in every subject for those who had a free lunch was lower than the students who did not.</p>
+</div>
+<div id="basic-random-forest" class="section level1">
+<h1>2. Basic random forest</h1>
+<p>I will use a simple random forest to make predictions on whether ot not a student had a test preperation course or not.</p>
+<p>Firstly I will detect and remove any outliers in the data. I will do this by summing all of the subject scores together and omitting any students that fall 3 standard deviations away from average total score.</p>
+<pre class="r"><code>data &lt;- data%&gt;%mutate(totscore = math.score+reading.score+writing.score)%&gt;%filter(!(totscore &gt; mean(totscore) + 3*sd(totscore) | totscore &lt; mean(totscore) - 3*sd(totscore)))
+
+data[[&quot;totscore&quot;]] &lt;- NULL</code></pre>
+<p>There are now 994 observations left in the dataset. I will now split my dataset into a train set and a test set.</p>
+<pre class="r"><code>set.seed(0987)
+
+split &lt;- caret::createDataPartition(data$test.preparation.course, p = 0.8, list = F)
+
+train &lt;- data[split, ]
+test &lt;- data[-split, ]</code></pre>
+<p>By using the trainControl function in the caret library I will specify for my model to divide the data into 5 folds and use repeated cross validation with 3 repeats so caret can tune the model to find the optimal parameters. The parameters that will be tuned will be the number of trees used (ntree) and the number of variables available to split at each tree node (mtry).</p>
+<p>I will then use the train function in caret to specify the time of algorithm to use and to fit my model. By using the rf model in the caret package I do not have to worry about feature selection as caret has automated this for this specific algorithm.</p>
+<pre class="r"><code>#fit model
+#
+fitcontrol &lt;- trainControl(method = &quot;repeatedcv&quot;, number = 5, repeats = 3)
+
+modelfit &lt;- train(test.preparation.course ~ ., data = train, method = &quot;rf&quot;, trControl = fitcontrol)</code></pre>
+<p>The number of trees caret decided to use for the model were 500 which is the default and the parameter for mtry was 8. We can see the importance of each variable by looking at the mean decrease in the gini value</p>
+<pre class="r"><code>modelfit$finalModel$importance</code></pre>
+<pre><code>##                                              MeanDecreaseGini
+## gendermale                                          15.430803
+## race.ethnicitygroup B                                9.232447
+## race.ethnicitygroup C                                9.910355
+## race.ethnicitygroup D                               10.622578
+## race.ethnicitygroup E                                7.682045
+## parental.level.of.educationbachelor&#39;s degree         7.962117
+## parental.level.of.educationhigh school               8.865612
+## parental.level.of.educationmaster&#39;s degree           5.847067
+## parental.level.of.educationsome college              9.668747
+## parental.level.of.educationsome high school         10.740078
+## free.lunch1                                         12.262308
+## math.score                                          82.299784
+## reading.score                                       76.397635
+## writing.score                                       98.518527</code></pre>
+<p>Lastly I will make the predictions on my test set of data</p>
+<pre class="r"><code>confusionMatrix(predict(modelfit, newdata = test), test$test.preparation.course)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   0   1
+##          0 102  35
+##          1  25  36
+##                                           
+##                Accuracy : 0.697           
+##                  95% CI : (0.6278, 0.7601)
+##     No Information Rate : 0.6414          
+##     P-Value [Acc &gt; NIR] : 0.05853         
+##                                           
+##                   Kappa : 0.3201          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 0.24528         
+##                                           
+##             Sensitivity : 0.8031          
+##             Specificity : 0.5070          
+##          Pos Pred Value : 0.7445          
+##          Neg Pred Value : 0.5902          
+##              Prevalence : 0.6414          
+##          Detection Rate : 0.5152          
+##    Detection Prevalence : 0.6919          
+##       Balanced Accuracy : 0.6551          
+##                                           
+##        &#39;Positive&#39; Class : 0               
+## </code></pre>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
