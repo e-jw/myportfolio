@@ -6,6 +6,6 @@ navbar:
       href: index.html
     - text: "Multivariate Regression"
       href: multiregression.html
-    - text: "Visualisations, simple random forest"
-      href: randforest.html
+    - text: "IV and simple hypothesis testing"
+      href: schooling.html
 output_dir: "docs"

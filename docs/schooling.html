@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Instrumental variable practice</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="multiregression.html">Multivariate Regression</a>
+</li>
+<li>
+  <a href="schooling.html">IV and simple hypothesis testing</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Instrumental variable practice</h1>
+
+</div>
+
+
+<div id="iv-regression-and-statistical-testing" class="section level1">
+<h1><strong>IV Regression and statistical testing</strong></h1>
+<div id="by-elias-wilson" class="section level2">
+<h2><em>By Elias Wilson</em></h2>
+<p>This short regression analysis invloves simple hypothesis testing, a two stage least squares regression and model comparison. I will make inferences about the standardised math scores of students.</p>
+<div id="load-data-and-packages-then-inspect" class="section level4">
+<h4>1. Load data and packages then inspect</h4>
+<pre class="r"><code># import libraries
+#
+library(foreign) # to import dta file
+library(dplyr) # for pipes 
+library(ggplot2) # for plots
+library(car) # for F-test
+library(AER) # for IV
+library(stargazer)</code></pre>
+<pre class="r"><code>#load data
+#
+skl &lt;- read.dta(&quot;schooling.dta&quot;)%&gt;%as_tibble()
+
+glimpse(skl)</code></pre>
+<pre><code>## Rows: 7,430
+## Columns: 13
+## $ id       &lt;dbl&gt; 124902, 124915, 124916, 124932, 124944, 124947, 124966, 1249…
+## $ read12   &lt;dbl&gt; 61.41, 58.34, 59.33, 49.59, 57.62, 52.53, 60.12, 64.69, 42.0…
+## $ math12   &lt;dbl&gt; 49.77, 59.84, 50.38, 45.03, 54.26, 56.73, 55.37, 65.07, 53.9…
+## $ female   &lt;int&gt; 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, …
+## $ asian    &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ hispan   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ black    &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ motheduc &lt;dbl&gt; 14, 14, 14, 12, 12, 12, 14, 14, 14, 14, 12, 12, 14, 14, 12, …
+## $ fatheduc &lt;dbl&gt; 12.0, 14.0, 11.0, 14.0, 12.0, 11.0, 14.0, 14.0, 14.0, 12.0, …
+## $ lfaminc  &lt;dbl&gt; 10.308952, 10.308952, 10.308952, 10.308952, 10.657259, 11.04…
+## $ hsgrad   &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ cathhs   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, …
+## $ parcath  &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, …</code></pre>
+<pre class="r"><code>summary(skl)</code></pre>
+<pre><code>##        id              read12          math12          female      
+##  Min.   : 124902   Min.   :29.15   Min.   :29.50   Min.   :0.0000  
+##  1st Qu.:2424049   1st Qu.:44.52   1st Qu.:45.02   1st Qu.:0.0000  
+##  Median :4592442   Median :53.08   Median :52.53   Median :1.0000  
+##  Mean   :4589838   Mean   :51.77   Mean   :52.13   Mean   :0.5174  
+##  3rd Qu.:7241106   3rd Qu.:59.47   3rd Qu.:59.86   3rd Qu.:1.0000  
+##  Max.   :7979086   Max.   :68.09   Max.   :71.37   Max.   :1.0000  
+##                                                                    
+##      asian             hispan           black            motheduc    
+##  Min.   :0.00000   Min.   :0.0000   Min.   :0.00000   Min.   : 8.00  
+##  1st Qu.:0.00000   1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:12.00  
+##  Median :0.00000   Median :0.0000   Median :0.00000   Median :14.00  
+##  Mean   :0.05168   Mean   :0.1035   Mean   :0.07066   Mean   :13.36  
+##  3rd Qu.:0.00000   3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:14.00  
+##  Max.   :1.00000   Max.   :1.0000   Max.   :1.00000   Max.   :18.00  
+##                                                                      
+##     fatheduc        lfaminc           hsgrad           cathhs       
+##  Min.   : 8.00   Min.   : 6.215   Min.   :0.0000   Min.   :0.00000  
+##  1st Qu.:12.00   1st Qu.:10.021   1st Qu.:1.0000   1st Qu.:0.00000  
+##  Median :14.00   Median :10.309   Median :1.0000   Median :0.00000  
+##  Mean   :13.67   Mean   :10.353   Mean   :0.9303   Mean   :0.06083  
+##  3rd Qu.:16.00   3rd Qu.:10.657   3rd Qu.:1.0000   3rd Qu.:0.00000  
+##  Max.   :18.00   Max.   :12.346   Max.   :1.0000   Max.   :1.00000  
+##                                   NA&#39;s   :1460                      
+##     parcath      
+##  Min.   :0.0000  
+##  1st Qu.:0.0000  
+##  Median :0.0000  
+##  Mean   :0.3459  
+##  3rd Qu.:1.0000  
+##  Max.   :1.0000  
+## </code></pre>
+<pre class="r"><code>#
+# read12 - reading standardised score
+# math12 - math standardised score
+# female - =1 if femlae
+# asian - =1 if asian
+# hispanic - =1 if hispanic
+# black - =1 if black
+# motheduc - mothers years of education
+# fatheduc - fathers years of education
+# lfaminc - log of family income
+# hsgrad - =1 if graduated highschool by 1994
+# catths - =1 if attended catholic highschool
+# parcath - =1 if a parent reports being catholic</code></pre>
+<p>Dataset has 13 variables and 7430 observations. There are 4 continuous variables and the rest are binary (with the exception of ID). About 20% of high school graduation dummy has missing values.</p>
+<p>The regressand is math12 which is the standardised math scores for students. We will first take a look at its ditribution, I would expect this to be more or less normal.</p>
+<pre class="r"><code>#
+m &lt;- mean(skl$math12)
+std &lt;- sd(skl$math12)
+
+skl%&gt;%ggplot() +
+  geom_histogram(aes(x=math12, y=..density..), fill=&quot;blue&quot;, colour=&quot;black&quot;, alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=m, sd=std), aes(x=math12)) +
+  labs(x=&quot;Standardised Math score&quot;, title=&quot;Density of Math score&quot;) +
+  theme(plot.title=element_text(face=&quot;bold&quot;))</code></pre>
+<p><img src="schooling_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>I will also look at how the distributions of the dependent variable differ between genders.</p>
+<pre class="r"><code>#
+fem &lt;- skl%&gt;%filter(female==1)%&gt;%summarise(mean=mean(math12), std=sd(math12))
+male &lt;- skl%&gt;%filter(female==0)%&gt;%summarise(mean=mean(math12), std=sd(math12))
+
+fm &lt;- fem[1]%&gt;%pull()
+fstd &lt;- fem[2]%&gt;%pull()
+mm &lt;- male[1]%&gt;%pull()
+mstd &lt;- male[2]%&gt;%pull()
+
+skl%&gt;%ggplot() +
+  geom_histogram(aes(x=math12, y=..density..), fill=&quot;blue&quot;, colour=&quot;black&quot;, alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=fm, sd=fstd), aes(x=math12, colour=&quot;female&quot;)) +
+  stat_function(fun=dnorm, args=list(mean=mm, sd=mstd), aes(x=math12, colour=&quot;male&quot;)) +
+  labs(x=&quot;Standardised Math score&quot;, title=&quot;Density of Math score&quot;) +
+  scale_colour_manual(&quot;Gender&quot;, values=c(&quot;red&quot;, &quot;green&quot;)) +
+  theme(plot.title=element_text(face=&quot;bold&quot;), legend.position=c(.9,.9))</code></pre>
+<p><img src="schooling_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>This shows that males have a slightly higher average math score but we will test to see if these means are significantly different from eachother statistically.</p>
+<pre class="r"><code># H0:fm==mm
+# H1:fm!=mm
+#
+diff &lt;- fm-mm
+v &lt;- var(skl$math12)
+n &lt;- nrow(skl)
+se &lt;- sqrt(v/n)
+df &lt;- n-2
+
+alpha &lt;- 0.05
+t &lt;- diff/se
+tcr &lt;- qt(1-alpha/2, df)
+
+abs(t)&gt;tcr #True</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>#
+# evidence found to reject null at 5% sig level</code></pre>
+<p>This simple two means t-test shows that there is evidence to reject the null hypothesis that the means of the two groups are the same at the 5% significance level.</p>
+<p>We can go on to look at the distribution of regressors such as the standardised reading score.</p>
+<pre class="r"><code>#
+m &lt;- mean(skl$read12)
+std &lt;- sd(skl$read12)
+
+skl%&gt;%ggplot() +
+  geom_histogram(aes(x=read12, y=..density..), fill=&quot;blue&quot;, colour=&quot;black&quot;, alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=m, sd=std), aes(x=read12)) +
+  labs(x=&quot;Standardised Reading score&quot;, title=&quot;Density of Reading score&quot;) +
+  theme(plot.title=element_text(face=&quot;bold&quot;))</code></pre>
+<p><img src="schooling_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>There is a slight negative skew in the data so I will square the reading score variable and see how the distribution looks.</p>
+<pre class="r"><code>#
+skl$sqread12 &lt;- skl$read12^2
+m &lt;- mean(skl$sqread12)
+std &lt;- sd(skl$sqread12)
+
+skl%&gt;%ggplot() +
+  geom_histogram(aes(x=sqread12, y=..density..), fill=&quot;blue&quot;, colour=&quot;black&quot;, alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=m, sd=std), aes(x=sqread12)) +
+  labs(x=&quot;Standardised Reading score squared&quot;, title=&quot;Density of squared Reading score&quot;) +
+  theme(plot.title=element_text(face=&quot;bold&quot;))</code></pre>
+<p><img src="schooling_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>This distribution looks slightly more normal. We can compare scatterplots of the regressor before and after transformation against the dependent variable.</p>
+<pre class="r"><code>#
+skl%&gt;%ggplot(aes(x=read12, y=math12)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method = &quot;lm&quot;) +
+  labs(y=&quot;Standardised Math score&quot;, x=&quot;Standardised Reading score&quot;, 
+       title=&quot;Relationship between Math and Reading scores&quot; ) +
+  theme(plot.title=element_text(face=&quot;bold&quot;))</code></pre>
+<p><img src="schooling_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>skl%&gt;%ggplot(aes(x=sqread12, y=math12)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method = &quot;lm&quot;) +
+  labs(y=&quot;Standardised Math score&quot;, x=&quot;Standardised Reading score squared&quot;, 
+       title=&quot;Relationship between Math and squared Reading scores&quot; ) +
+  theme(plot.title=element_text(face=&quot;bold&quot;))</code></pre>
+<p><img src="schooling_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
+<p>The transformation looks to have made the data more linear so I will include in regression.</p>
+</div>
+<div id="model" class="section level4">
+<h4>2. Model</h4>
+<p>I will run a basic multiple regression to look at the significance of regressors.</p>
+<pre class="r"><code>mod1 &lt;- lm(math12~read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+cathhs,
+           data = skl)
+smod1 &lt;- summary(mod1)
+# math12_hat = b0 + b1read12 + b2sqread12 + b3female + b4asian + b5hispan + b6black + 
+# b7motheduc + b8fatheduc + b9lfaminc + b10cathhs
+#
+smod1</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = math12 ~ read12 + sqread12 + female + asian + hispan + 
+##     black + motheduc + fatheduc + lfaminc + cathhs, data = skl)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -26.7598  -4.2701   0.2842   4.3614  23.8141 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 13.6463782  2.2349985   6.106 1.07e-09 ***
+## read12       0.2161076  0.0813921   2.655  0.00794 ** 
+## sqread12     0.0043159  0.0008113   5.320 1.07e-07 ***
+## female      -2.4098751  0.1463840 -16.463  &lt; 2e-16 ***
+## asian        2.2597579  0.3308959   6.829 9.21e-12 ***
+## hispan      -0.4345675  0.2480476  -1.752  0.07982 .  
+## black       -2.1120941  0.2944068  -7.174 7.98e-13 ***
+## motheduc     0.3338614  0.0460291   7.253 4.48e-13 ***
+## fatheduc     0.3384282  0.0418467   8.087 7.07e-16 ***
+## lfaminc      0.7286871  0.1069738   6.812 1.04e-11 ***
+## cathhs       0.6822298  0.3060018   2.229  0.02581 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 6.242 on 7419 degrees of freedom
+## Multiple R-squared:  0.5651, Adjusted R-squared:  0.5645 
+## F-statistic: 964.1 on 10 and 7419 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Test to see whether hispan and cathhs are jointly insignificant with F-test then t-test hispan.</p>
+<pre class="r"><code># F-test
+# H0:b5=b10=0
+# H1:b5!=0 or b10!=0
+
+urstrctd &lt;- mod1
+nullhyp &lt;- c(&quot;hispan&quot;, &quot;cathhs&quot;)
+linearHypothesis(urstrctd, nullhyp)</code></pre>
+<pre><code>## Linear hypothesis test
+## 
+## Hypothesis:
+## hispan = 0
+## cathhs = 0
+## 
+## Model 1: restricted model
+## Model 2: math12 ~ read12 + sqread12 + female + asian + hispan + black + 
+##     motheduc + fatheduc + lfaminc + cathhs
+## 
+##   Res.Df    RSS Df Sum of Sq      F  Pr(&gt;F)  
+## 1   7421 289374                              
+## 2   7419 289073  2    301.24 3.8657 0.02099 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># can reject the null that our coefficients are jointly 0
+
+# t-test
+#H0:b3=0
+#H1:b3!=0
+
+b5 &lt;- coef(mod1)[[&quot;hispan&quot;]]
+seb5 &lt;- sqrt(vcov(mod1)[4,4])
+df &lt;- df.residual(mod1)
+
+t &lt;- b5/seb5
+tcr &lt;- qt(1-alpha/2, df)
+
+abs(t)&gt;tcr # False </code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code># fail to reject the null at the 5% significance level
+#</code></pre>
+<p>The F-test rejects the null hypothesis that our coefficients are jointly equal to 0 and our t-test fails to reject the null that hispan is equal to 0.</p>
+<p>Catholic high schools are usually quite prolific and their students score well, often they are hard for students to get in to and for reasons such as these it is likely that the cathhs variable is correlated with the unobserved in our model. I would suggest that a variable indicating whether or not the students parents were catholic would capture a fair amount of the variance in the cathhs variable and I think it would be defendable that this variable would not be correlated with the unobserved.</p>
+<pre class="r"><code># IV estimation for catholic high school (cathhs) using parental catholic variable (parcath)
+#
+stage1 &lt;- lm(cathhs~parcath+read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc, 
+         data = skl)
+sstage1 &lt;- summary(stage1)
+
+sstage1</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = cathhs ~ parcath + read12 + sqread12 + female + 
+##     asian + hispan + black + motheduc + fatheduc + lfaminc, data = skl)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.26106 -0.10532 -0.02656  0.00605  1.09037 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -2.648e-01  8.099e-02  -3.269 0.001084 ** 
+## parcath      1.560e-01  5.886e-03  26.504  &lt; 2e-16 ***
+## read12      -2.036e-03  2.952e-03  -0.690 0.490483    
+## sqread12     3.188e-05  2.943e-05   1.083 0.278676    
+## female      -1.199e-02  5.307e-03  -2.260 0.023878 *  
+## asian       -1.350e-02  1.200e-02  -1.125 0.260656    
+## hispan      -4.232e-02  9.430e-03  -4.488 7.31e-06 ***
+## black        6.000e-02  1.075e-02   5.583 2.45e-08 ***
+## motheduc     1.936e-03  1.670e-03   1.160 0.246164    
+## fatheduc     5.244e-03  1.516e-03   3.459 0.000546 ***
+## lfaminc      1.915e-02  3.875e-03   4.941 7.95e-07 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2264 on 7419 degrees of freedom
+## Multiple R-squared:  0.1045, Adjusted R-squared:  0.1033 
+## F-statistic: 86.62 on 10 and 7419 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># significant estimator for cathhs. Likely uncorrelated with the unobserved so
+# evidence for valid instrument.
+#</code></pre>
+<p>I will build the regression using the fitted values of the cathhs variable and this will show explicit results. However, the standard errors in the regression will be calculated wrong so I will use the function ivreg from the AER package to collect the correct results.</p>
+<pre class="r"><code>#
+skl$cathhs_hat &lt;- fitted(stage1)
+
+mod2 &lt;- lm(math12~read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+cathhs_hat,
+           data = skl)
+smod2 &lt;- summary(mod2)
+
+smod2</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = math12 ~ read12 + sqread12 + female + asian + hispan + 
+##     black + motheduc + fatheduc + lfaminc + cathhs_hat, data = skl)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -26.6447  -4.2762   0.2839   4.3552  23.8194 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 14.580152   2.255116   6.465 1.07e-10 ***
+## read12       0.216813   0.081351   2.665 0.007712 ** 
+## sqread12     0.004276   0.000811   5.273 1.38e-07 ***
+## female      -2.366372   0.147015 -16.096  &lt; 2e-16 ***
+## asian        2.301589   0.331016   6.953 3.88e-12 ***
+## hispan      -0.534871   0.250132  -2.138 0.032520 *  
+## black       -2.192015   0.295442  -7.419 1.31e-13 ***
+## motheduc     0.331112   0.046015   7.196 6.82e-13 ***
+## fatheduc     0.320876   0.042227   7.599 3.35e-14 ***
+## lfaminc      0.653835   0.109749   5.958 2.68e-09 ***
+## cathhs_hat   3.686572   1.039934   3.545 0.000395 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 6.239 on 7419 degrees of freedom
+## Multiple R-squared:  0.5656, Adjusted R-squared:  0.565 
+## F-statistic: 965.8 on 10 and 7419 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># explicit results shown in mod2 however standard errors will be calculated wrong 
+
+mod3 &lt;- ivreg(math12~read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+cathhs |
+                read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+parcath, 
+              data=skl)
+smod3 &lt;- summary(mod3)
+
+smod3</code></pre>
+<pre><code>## 
+## Call:
+## ivreg(formula = math12 ~ read12 + sqread12 + female + asian + 
+##     hispan + black + motheduc + fatheduc + lfaminc + cathhs | 
+##     read12 + sqread12 + female + asian + hispan + black + motheduc + 
+##         fatheduc + lfaminc + parcath, data = skl)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -26.5591  -4.2750   0.2603   4.4016  23.9677 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 14.5801517  2.2708796   6.420 1.44e-10 ***
+## read12       0.2168133  0.0819195   2.647 0.008146 ** 
+## sqread12     0.0042762  0.0008167   5.236 1.68e-07 ***
+## female      -2.3663716  0.1480430 -15.984  &lt; 2e-16 ***
+## asian        2.3015887  0.3333301   6.905 5.44e-12 ***
+## hispan      -0.5348706  0.2518803  -2.124 0.033744 *  
+## black       -2.1920150  0.2975071  -7.368 1.92e-13 ***
+## motheduc     0.3311119  0.0463363   7.146 9.79e-13 ***
+## fatheduc     0.3208760  0.0425216   7.546 5.02e-14 ***
+## lfaminc      0.6538347  0.1105166   5.916 3.44e-09 ***
+## cathhs       3.6865717  1.0472037   3.520 0.000433 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 6.283 on 7419 degrees of freedom
+## Multiple R-Squared: 0.5595,  Adjusted R-squared: 0.5589 
+## Wald test: 952.4 on 10 and 7419 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>We can compare models before and after IV.</p>
+<pre class="r"><code>stargazer(mod1, mod3, type=&quot;text&quot;)</code></pre>
+<pre><code>## 
+## =======================================================================
+##                                           Dependent variable:          
+##                                 ---------------------------------------
+##                                                 math12                 
+##                                            OLS             instrumental
+##                                                              variable  
+##                                            (1)                 (2)     
+## -----------------------------------------------------------------------
+## read12                                   0.216***            0.217***  
+##                                          (0.081)             (0.082)   
+##                                                                        
+## sqread12                                 0.004***            0.004***  
+##                                          (0.001)             (0.001)   
+##                                                                        
+## female                                  -2.410***           -2.366***  
+##                                          (0.146)             (0.148)   
+##                                                                        
+## asian                                    2.260***            2.302***  
+##                                          (0.331)             (0.333)   
+##                                                                        
+## hispan                                   -0.435*             -0.535**  
+##                                          (0.248)             (0.252)   
+##                                                                        
+## black                                   -2.112***           -2.192***  
+##                                          (0.294)             (0.298)   
+##                                                                        
+## motheduc                                 0.334***            0.331***  
+##                                          (0.046)             (0.046)   
+##                                                                        
+## fatheduc                                 0.338***            0.321***  
+##                                          (0.042)             (0.043)   
+##                                                                        
+## lfaminc                                  0.729***            0.654***  
+##                                          (0.107)             (0.111)   
+##                                                                        
+## cathhs                                   0.682**             3.687***  
+##                                          (0.306)             (1.047)   
+##                                                                        
+## Constant                                13.646***           14.580***  
+##                                          (2.235)             (2.271)   
+##                                                                        
+## -----------------------------------------------------------------------
+## Observations                              7,430               7,430    
+## R2                                        0.565               0.559    
+## Adjusted R2                               0.565               0.559    
+## Residual Std. Error (df = 7419)           6.242               6.283    
+## F Statistic                     964.063*** (df = 10; 7419)             
+## =======================================================================
+## Note:                                       *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

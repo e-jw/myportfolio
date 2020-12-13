@@ -19,15 +19,15 @@ output: html_document
 
 # **Elias Wilson**
 
-I am a 20 year old Bsc Economics candidate at the University of Bristol and I am using this website to host any projects that I make. 
+I am a 20 year old Bsc Economics candidate at the University of Bristol and I am using this website to host any projects that I make or any econometric concepts I practice. 
 
 ## About
 
 My interests include statistics, econometrics, economic growth and demography. 
 
-I have been teaching myself the R programming language for over two years and I am familiar with the wide range of resources and the community surrounding R.
+I have been teaching myself the R programming language for over two years and I am familiar with the wide range of resources and the community surrounding R. My course involves, and has introduced me to, Stata and I hope to also further my understanding of this language. 
 
-Studying econometrics means I focus on discovering causal relationships and testing theory, however, I am also interested in, and read about, predictive modelling and machine learning.
+Studying econometrics means I focus on uncovering causal relationships and testing theory, however, I am also interested in, and read about, predictive modelling and machine learning.
 
 [Twitter](https://twitter.com/e_liaswilson) [Linkedin](https://www.linkedin.com/in/elias-wilson-324685189/) [GitHub](https://github.com/e-jw)
 

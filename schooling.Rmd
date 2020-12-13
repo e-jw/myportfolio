@@ -1,0 +1,266 @@
+---
+title: "Instrumental variable practice"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    #code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+```
+
+
+# **IV Regression and statistical testing**
+## *By Elias Wilson*
+
+This short regression analysis invloves simple hypothesis testing, a two stage least squares regression and model comparison. I will make inferences about the standardised math scores of students. 
+
+#### 1. Load data and packages then inspect
+
+```{r, message=FALSE, warning=FALSE}
+# import libraries
+#
+library(foreign) # to import dta file
+library(dplyr) # for pipes 
+library(ggplot2) # for plots
+library(car) # for F-test
+library(AER) # for IV
+library(stargazer)
+```
+
+```{r, message=FALSE}
+#load data
+#
+skl <- read.dta("schooling.dta")%>%as_tibble()
+
+glimpse(skl)
+summary(skl)
+#
+# read12 - reading standardised score
+# math12 - math standardised score
+# female - =1 if femlae
+# asian - =1 if asian
+# hispanic - =1 if hispanic
+# black - =1 if black
+# motheduc - mothers years of education
+# fatheduc - fathers years of education
+# lfaminc - log of family income
+# hsgrad - =1 if graduated highschool by 1994
+# catths - =1 if attended catholic highschool
+# parcath - =1 if a parent reports being catholic
+```
+
+Dataset has 13 variables and 7430 observations. There are 4 continuous variables and the rest are binary (with the exception of ID). About 20% of high school graduation dummy has missing values. 
+
+The regressand is math12 which is the standardised math scores for students. We will first take a look at its ditribution, I would expect this to be more or less normal.
+
+```{r, warning=FALSE, message=FALSE}
+#
+m <- mean(skl$math12)
+std <- sd(skl$math12)
+
+skl%>%ggplot() +
+  geom_histogram(aes(x=math12, y=..density..), fill="blue", colour="black", alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=m, sd=std), aes(x=math12)) +
+  labs(x="Standardised Math score", title="Density of Math score") +
+  theme(plot.title=element_text(face="bold"))
+```
+
+I will also look at how the distributions of the dependent variable differ between genders. 
+
+```{r, warning=FALSE, message=FALSE}
+#
+fem <- skl%>%filter(female==1)%>%summarise(mean=mean(math12), std=sd(math12))
+male <- skl%>%filter(female==0)%>%summarise(mean=mean(math12), std=sd(math12))
+
+fm <- fem[1]%>%pull()
+fstd <- fem[2]%>%pull()
+mm <- male[1]%>%pull()
+mstd <- male[2]%>%pull()
+
+skl%>%ggplot() +
+  geom_histogram(aes(x=math12, y=..density..), fill="blue", colour="black", alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=fm, sd=fstd), aes(x=math12, colour="female")) +
+  stat_function(fun=dnorm, args=list(mean=mm, sd=mstd), aes(x=math12, colour="male")) +
+  labs(x="Standardised Math score", title="Density of Math score") +
+  scale_colour_manual("Gender", values=c("red", "green")) +
+  theme(plot.title=element_text(face="bold"), legend.position=c(.9,.9))
+```
+
+This shows that males have a slightly higher average math score but we will test to see if these means are significantly different from eachother statistically.
+
+```{r}
+# H0:fm==mm
+# H1:fm!=mm
+#
+diff <- fm-mm
+v <- var(skl$math12)
+n <- nrow(skl)
+se <- sqrt(v/n)
+df <- n-2
+
+alpha <- 0.05
+t <- diff/se
+tcr <- qt(1-alpha/2, df)
+
+abs(t)>tcr #True
+#
+# evidence found to reject null at 5% sig level
+```
+
+This simple two means t-test shows that there is evidence to reject the null hypothesis that the means of the two groups are the same at the 5% significance level. 
+
+We can go on to look at the distribution of regressors such as the standardised reading score.
+
+```{r, message=FALSE, warning=FALSE}
+#
+m <- mean(skl$read12)
+std <- sd(skl$read12)
+
+skl%>%ggplot() +
+  geom_histogram(aes(x=read12, y=..density..), fill="blue", colour="black", alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=m, sd=std), aes(x=read12)) +
+  labs(x="Standardised Reading score", title="Density of Reading score") +
+  theme(plot.title=element_text(face="bold"))
+```
+
+There is a slight negative skew in the data so I will square the reading score variable and see how the distribution looks.
+
+```{r, message=FALSE, warning=FALSE}
+#
+skl$sqread12 <- skl$read12^2
+m <- mean(skl$sqread12)
+std <- sd(skl$sqread12)
+
+skl%>%ggplot() +
+  geom_histogram(aes(x=sqread12, y=..density..), fill="blue", colour="black", alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=m, sd=std), aes(x=sqread12)) +
+  labs(x="Standardised Reading score squared", title="Density of squared Reading score") +
+  theme(plot.title=element_text(face="bold"))
+
+```
+
+This distribution looks slightly more normal. We can compare scatterplots of the regressor before and after transformation against the dependent variable. 
+
+```{r, message=FALSE}
+#
+skl%>%ggplot(aes(x=read12, y=math12)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method = "lm") +
+  labs(y="Standardised Math score", x="Standardised Reading score", 
+       title="Relationship between Math and Reading scores" ) +
+  theme(plot.title=element_text(face="bold"))
+
+skl%>%ggplot(aes(x=sqread12, y=math12)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method = "lm") +
+  labs(y="Standardised Math score", x="Standardised Reading score squared", 
+       title="Relationship between Math and squared Reading scores" ) +
+  theme(plot.title=element_text(face="bold"))
+
+```
+
+
+The transformation looks to have made the data more linear so I will include in regression. 
+
+
+#### 2. Model
+
+I will run a basic multiple regression to look at the significance of regressors.
+
+```{r}
+mod1 <- lm(math12~read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+cathhs,
+           data = skl)
+smod1 <- summary(mod1)
+# math12_hat = b0 + b1read12 + b2sqread12 + b3female + b4asian + b5hispan + b6black + 
+# b7motheduc + b8fatheduc + b9lfaminc + b10cathhs
+#
+smod1
+```
+
+Test to see whether hispan and cathhs are jointly insignificant with F-test then t-test hispan.
+
+```{r}
+# F-test
+# H0:b5=b10=0
+# H1:b5!=0 or b10!=0
+
+urstrctd <- mod1
+nullhyp <- c("hispan", "cathhs")
+linearHypothesis(urstrctd, nullhyp)
+
+# can reject the null that our coefficients are jointly 0
+
+# t-test
+#H0:b3=0
+#H1:b3!=0
+
+b5 <- coef(mod1)[["hispan"]]
+seb5 <- sqrt(vcov(mod1)[4,4])
+df <- df.residual(mod1)
+
+t <- b5/seb5
+tcr <- qt(1-alpha/2, df)
+
+abs(t)>tcr # False 
+
+# fail to reject the null at the 5% significance level
+#
+```
+
+The F-test rejects the null hypothesis that our coefficients are jointly equal to 0 and our t-test fails to reject the null that hispan is equal to 0. 
+
+Catholic high schools are usually quite prolific and their students score well, often they are hard for students to get in to and for reasons such as these it is likely that the cathhs variable is correlated with the unobserved in our model. I would suggest that a variable indicating whether or not the students parents were catholic would capture a fair amount of the variance in the cathhs variable and I think it would be defendable that this variable would not be correlated with the unobserved. 
+
+```{r}
+# IV estimation for catholic high school (cathhs) using parental catholic variable (parcath)
+#
+stage1 <- lm(cathhs~parcath+read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc, 
+         data = skl)
+sstage1 <- summary(stage1)
+
+sstage1
+# significant estimator for cathhs. Likely uncorrelated with the unobserved so
+# evidence for valid instrument.
+#
+```
+
+I will build the regression using the fitted values of the cathhs variable and this will show explicit results. However, the standard errors in the regression will be calculated wrong so I will use the function ivreg from the AER package to collect the correct results. 
+
+```{r}
+#
+skl$cathhs_hat <- fitted(stage1)
+
+mod2 <- lm(math12~read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+cathhs_hat,
+           data = skl)
+smod2 <- summary(mod2)
+
+smod2
+# explicit results shown in mod2 however standard errors will be calculated wrong 
+
+mod3 <- ivreg(math12~read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+cathhs |
+                read12+sqread12+female+asian+hispan+black+motheduc+fatheduc+lfaminc+parcath, 
+              data=skl)
+smod3 <- summary(mod3)
+
+smod3
+```
+
+We can compare models before and after IV.
+
+```{r, warning=FALSE}
+stargazer(mod1, mod3, type="text")
+```
+
+
+
+
+
+
+
+
