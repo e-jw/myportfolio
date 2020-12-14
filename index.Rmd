@@ -23,7 +23,7 @@ I am a 20 year old Bsc Economics candidate at the University of Bristol and I am
 
 ## About
 
-My interests include statistics, econometrics, economic growth and demography. 
+My interests include statistics, econometrics and microeconomics. 
 
 I have been teaching myself the R programming language for over two years and I am familiar with the wide range of resources and the community surrounding R. My course involves, and has introduced me to, Stata and I hope to also further my understanding of this language. 
 
