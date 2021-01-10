@@ -8,4 +8,6 @@ navbar:
       href: multiregression.html
     - text: "IV and simple hypothesis testing"
       href: schooling.html
+    - text: "Beveridge curve shift"
+      href: beveridgecurve.html
 output_dir: "docs"

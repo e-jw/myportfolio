@@ -26,6 +26,15 @@
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
   pre:not([class]) {
@@ -70,6 +79,7 @@ h6 {
   text-align: left;
 }
 </style>
+
 
 
 
@@ -356,6 +366,9 @@ div.tocify {
 <li>
   <a href="schooling.html">IV and simple hypothesis testing</a>
 </li>
+<li>
+  <a href="beveridgecurve.html">Beveridge curve shift</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -474,22 +487,23 @@ grid.arrange(sqftAbvDensity, sqftBsmtDensity, sqftLivingDensity, sqftLotDensity,
 <pre class="r"><code>house &lt;- house%&gt;%mutate(bsmt = ifelse(sqft_basement &gt; 0, 1, 0))
 
 house$sqft_basement &lt;- NULL</code></pre>
-<p>I suspect that because not all houses will be renovated so a similar approach can be taken with the variable yr_renovated.</p>
+<p>I suspect that because not all houses will be renovated so a similar approach can be taken with the variable yr_renovated. I will also change the variable to years since renovation.</p>
 <p>I found that 95.77% of the observations have not been renovated and have a 0 value for this variable.</p>
 <pre class="r"><code>house &lt;- house%&gt;%mutate(renovated = ifelse(yr_renovated  == 0, 0, 1))
+
+house &lt;- house%&gt;%mutate(years_since_renv = 2015 - yr_renovated)
+house$years_since_renv &lt;- ifelse(house$years_since_renv == 2015, NA, house$years_since_renv)
 
 house$yr_renovated &lt;- NULL</code></pre>
 <p>From looking at this newly created variable we can see that houses that have been renovated are on average more expensive than those that have not.</p>
 <pre class="r"><code>house%&gt;%group_by(renovated)%&gt;%
-  summarise(avePrice = mean(price))%&gt;%
-  ggplot(aes(x = as.factor(renovated), y = avePrice, fill = as.factor(renovated))) + 
-  geom_bar(stat = &quot;identity&quot;) +
-  scale_fill_manual(values = c(&quot;#00CCCC&quot;, &quot;#0066CC&quot;)) +
-  labs(x = &quot;Renovated&quot;, y = &quot;Mean price&quot;, 
-       title = &quot;Price difference of houses 
-that have been renovated&quot;) +
-  theme(legend.position = &quot;none&quot;, 
-        plot.title = element_text(face = &quot;bold&quot;, size  = 20))</code></pre>
+    ggplot(aes(x = as.factor(renovated), y = price, fill = as.factor(renovated))) + 
+    geom_boxplot(stat = &quot;boxplot&quot;, notch = TRUE, outlier.alpha = 0.5) +
+    scale_fill_manual(values = c(&quot;#00CCCC&quot;, &quot;#0066CC&quot;)) +
+    labs(x = &quot;Renovated&quot;, y = &quot;Price&quot;, 
+         title = &quot;Price difference of houses that have been renovated&quot;) +
+    theme(legend.position = &quot;none&quot;, 
+          plot.title = element_text(face = &quot;bold&quot;, size  = 20))</code></pre>
 <p><img src="multiregression_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Now I will look at the density plots of the square footage of the nearest 15 neighbours to see if it follows a similar trend.</p>
 <pre class="r"><code>#density of square footage of nearest 15 houses
@@ -556,7 +570,7 @@ grid.arrange(bedroomBox, bathroomBox, ncol = 2)</code></pre>
 <p>There is house with 33 bedrooms which sold for a relatively low price considering a house like that must be quite large in size. It is possible that this is a data entry error so I will take a look at the individual observation.</p>
 <p>After looking at the observation I think that this value was supposed to be a 3 as the mean square footage of the living area for a 3 bedroom house fits similarly with our 33 bedroom observation as do other properties.</p>
 <pre class="r"><code>house[house$bedrooms == 33, &quot;bedrooms&quot;] &lt;- 3</code></pre>
-<p>I am going to use the yr_built variable to engineer an age variable for the house, this will make this propert a continuous variable which is easier to interpret. I will have to omit the variable yr_built as age will be a linear combination of yr_built which will cause perfect multicollinearity.</p>
+<p>I am going to use the yr_built variable to engineer an age variable for the house, this will now be a continuous variable which is easier to interpret. I will have to omit the variable yr_built as age will be a linear combination of yr_built which will cause perfect multicollinearity.</p>
 <pre class="r"><code>#the most recent year a house was built was 2015 so to make age subtract yr_built from 2015
 #
 house$age &lt;- 2015 - house$yr_built
@@ -1130,7 +1144,7 @@ houseMod%&gt;%ggplot(aes(x = bathrooms, y = resid)) +
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();

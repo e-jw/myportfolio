@@ -11,7 +11,7 @@
 
 
 
-<title>My Portfolio</title>
+<title>Beveridge curve shift</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +19,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -258,6 +261,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -265,6 +331,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -305,38 +381,80 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">My Portfolio</h1>
+<h1 class="title toc-ignore">Beveridge curve shift</h1>
 
 </div>
 
 
-<style type="text/css">
-.title {
-  display: none;
-}
+<div id="us-beveridge-curve-shift" class="section level1">
+<h1><strong>US Beveridge curve shift</strong></h1>
+<div id="by-elias-wilson" class="section level2">
+<h2><em>By Elias Wilson</em></h2>
+<p>These few lines of code manipulates labour market data to show the shift of the Beveridge curve in the US due to the Great Financial Crisis.</p>
+<p>One hypothesis as to why the Beveridge curve shifted is the decline in matching efficiency due to the increased selectivity by firms.</p>
+<pre class="r"><code>### vacancy rate
+#
+# create employed dataset
+employed &lt;- lab_stats%&gt;%filter(Subject==&quot;Employed population, Aged 15 and over, All persons&quot;)%&gt;%
+  dplyr::select(c(&quot;Country&quot;, &quot;Time&quot;, &quot;Value&quot;))
+employed &lt;- employed%&gt;%rename(Employment=Value)
 
-#getting-started img {
-  margin-right: 10px;
-}
+# only keep job vacancies
+vac &lt;- vac%&gt;%filter(Subject==&quot;Job vacancies, Total, Unfilled vacancies (stock), sa&quot;)%&gt;%
+  dplyr::select(c(&quot;Country&quot;, &quot;Time&quot;, &quot;Value&quot;))
+vac &lt;- vac%&gt;%rename(Vacancies=Value)
 
-</style>
-<div class="row" style="padding-top: 30px;">
-<div class="col-sm-6">
-<h1 id="elias-wilson"><strong>Elias Wilson</strong></h1>
-<p>I am a 20 year old Bsc Economics candidate at the University of Bristol and I am using this website to host any projects that I make or any econometric concepts I practice.</p>
-<h2 id="about">About</h2>
-<p>My interests include statistics, econometrics and microeconomics.</p>
-<p>I have been teaching myself the R programming language for over two years and I am familiar with the wide range of resources and the community surrounding R. My course involves, and has introduced me to, Stata and I hope to also further my understanding of this language.</p>
-<p>Studying econometrics means I focus on uncovering causal relationships and testing theory, however, I am also interested in, and read about, predictive modelling and machine learning.</p>
-<p><a href="https://twitter.com/e_liaswilson">Twitter</a> <a href="https://www.linkedin.com/in/elias-wilson-324685189/">Linkedin</a> <a href="https://github.com/e-jw">GitHub</a></p>
+# merge datsets
+mrgdvac &lt;- merge(vac, employed, by=c(&quot;Time&quot;, &quot;Country&quot;))
+
+# calculate vacancy rate. employment is in 1000&#39;s 
+mrgdvac &lt;- mrgdvac%&gt;%mutate(v=Vacancies/(Vacancies+1000*Employment))
+
+### unemployment rate
+#
+# get unemployment data
+unemployed &lt;- lab_stats%&gt;%filter(Subject==&quot;Unemployed population, Aged 15 and over, All persons&quot;)%&gt;%
+  dplyr::select(c(&quot;Country&quot;, &quot;Time&quot;, &quot;Value&quot;))
+unemployed &lt;- unemployed%&gt;%rename(Unemployment=Value)
+
+# merge with employment data
+mrgdemp &lt;- merge(employed, unemployed, by=c(&quot;Time&quot;, &quot;Country&quot;))
+
+# calculate unemployment rate
+mrgdemp &lt;- mrgdemp%&gt;%mutate(u=Unemployment/(Unemployment+Employment))
+
+### beveridge curve
+#
+# merge unemployment and vacancy data
+bev &lt;- merge(mrgdemp, mrgdvac, by=c(&quot;Time&quot;, &quot;Country&quot;))
+
+# change time format
+bev &lt;- bev%&gt;%mutate(Date=as.yearqtr(Time, format=&quot;Q%q-%Y&quot;))
+bev$year &lt;- gsub(&quot; .*&quot;, &quot;&quot;, bev$Date)
+
+# add gfc variable
+bev &lt;- bev%&gt;%mutate(period= ifelse(year&lt;2010, &quot;Pre and during GFC&quot;, &quot;Post GFC&quot;))
+
+# plot beveridge curve
+bev%&gt;%filter(Country==&quot;United States&quot;)%&gt;%
+  arrange(Date)%&gt;%
+  ggplot(aes(x=u, y=v)) + 
+  geom_path(aes(colour=period)) + 
+  geom_point(aes(colour=period), size=2, alpha=0.5) +
+  geom_smooth(span=1.5, aes(group=period), se=FALSE, linetype=&quot;dashed&quot;, colour=&quot;black&quot;) +
+  scale_colour_manual(&quot;Period&quot;, values=c(&quot;Red&quot;, &quot;Blue&quot;)) +
+  labs(x=&quot;Unemployment rate&quot;, y=&quot;Vacancy rate&quot;, 
+       title=&quot;Beveridge curve shift in the US post GFC&quot;, 
+       subtitle= &quot;Data from 2000-2019&quot;) + 
+  theme(plot.title=element_text(face=&quot;bold&quot;, size=20), legend.position = c(.9,.9))</code></pre>
+<p><img src="beveridgecurve_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
-<div class="col-sm-6">
-<p><img src="images/world.png" /></p>
-<p></a></p>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -369,6 +487,32 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
