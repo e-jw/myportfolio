@@ -124,11 +124,14 @@ house$sqft_basement <- NULL
 ```
 
 
-I suspect that because not all houses will be renovated so a similar approach can be taken with the variable yr_renovated. 
+I suspect that because not all houses will be renovated so a similar approach can be taken with the variable yr_renovated. I will also change the variable to years since renovation.  
 
 I found that `r round(table(house$yr_renovated)[1]/nrow(house)*100, 2)`% of the observations have not been renovated and have a 0 value for this variable.
 ```{r}
 house <- house%>%mutate(renovated = ifelse(yr_renovated  == 0, 0, 1))
+
+house <- house%>%mutate(years_since_renv = 2015 - yr_renovated)
+house$years_since_renv <- ifelse(house$years_since_renv == 2015, NA, house$years_since_renv)
 
 house$yr_renovated <- NULL
 ```
@@ -137,15 +140,13 @@ house$yr_renovated <- NULL
 From looking at this newly created variable we can see that houses that have been renovated are on average more expensive than those that have not. 
 ```{r}
 house%>%group_by(renovated)%>%
-  summarise(avePrice = mean(price))%>%
-  ggplot(aes(x = as.factor(renovated), y = avePrice, fill = as.factor(renovated))) + 
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("#00CCCC", "#0066CC")) +
-  labs(x = "Renovated", y = "Mean price", 
-       title = "Price difference of houses 
-that have been renovated") +
-  theme(legend.position = "none", 
-        plot.title = element_text(face = "bold", size  = 20))
+    ggplot(aes(x = as.factor(renovated), y = price, fill = as.factor(renovated))) + 
+    geom_boxplot(stat = "boxplot", notch = TRUE, outlier.alpha = 0.5) +
+    scale_fill_manual(values = c("#00CCCC", "#0066CC")) +
+    labs(x = "Renovated", y = "Price", 
+         title = "Price difference of houses that have been renovated") +
+    theme(legend.position = "none", 
+          plot.title = element_text(face = "bold", size  = 20))
 ```
 
 
@@ -236,7 +237,7 @@ house[house$bedrooms == 33, "bedrooms"] <- 3
 ```
 
 
-I am going to use  the yr_built variable to engineer an age variable for the house, this will make this propert a continuous variable which is easier to interpret. I will have to omit  the variable  yr_built as age will be a linear combination of yr_built which will cause perfect multicollinearity. 
+I am going to use  the yr_built variable to engineer an age variable for the house, this will now be a continuous variable which is easier to interpret. I will have to omit  the variable  yr_built as age will be a linear combination of yr_built which will cause perfect multicollinearity. 
 ```{r}
 #the most recent year a house was built was 2015 so to make age subtract yr_built from 2015
 #
