@@ -1,0 +1,95 @@
+---
+title: "Beveridge curve shift"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    #code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+```
+
+# **US Beveridge curve shift**
+## *By Elias Wilson*
+
+These few lines of code manipulates labour market data to show the shift of the Beveridge curve in the US due to the Great Financial Crisis.
+
+One hypothesis as to why the Beveridge curve shifted is the decline in matching efficiency due to the increased selectivity by firms.
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(zoo)
+
+# load data
+lab_stats <- read.csv("labour stats.csv")%>%as_tibble()
+vac <- read.csv("job vacancies.csv")%>%as_tibble()
+
+glimpse(lab_stats)
+glimpse(vac)
+
+### vacancy rate
+#
+# create employed dataset
+employed <- lab_stats%>%filter(Subject=="Employed population, Aged 15 and over, All persons")%>%
+  select(c("Country", "Time", "Value"))
+employed <- employed%>%rename(Employment=Value)
+
+# only keep job vacancies
+vac <- vac%>%filter(Subject=="Job vacancies, Total, Unfilled vacancies (stock), sa")%>%
+  select(c("Country", "Time", "Value"))
+vac <- vac%>%rename(Vacancies=Value)
+
+# merge datsets
+mrgdvac <- merge(vac, employed, by=c("Time", "Country"))
+
+# calculate vacancy rate. employment is in 1000's 
+mrgdvac <- mrgdvac%>%mutate(v=Vacancies/(Vacancies+1000*Employment))
+
+### unemployment rate
+#
+# get unemployment data
+unemployed <- lab_stats%>%filter(Subject=="Unemployed population, Aged 15 and over, All persons")%>%
+  select(c("Country", "Time", "Value"))
+unemployed <- unemployed%>%rename(Unemployment=Value)
+
+# merge with employment data
+mrgdemp <- merge(employed, unemployed, by=c("Time", "Country"))
+
+# calculate unemployment rate
+mrgdemp <- mrgdemp%>%mutate(u=Unemployment/(Unemployment+Employment))
+
+### beveridge curve
+#
+# merge unemployment and vacancy data
+bev <- merge(mrgdemp, mrgdvac, by=c("Time", "Country"))
+
+# change time format
+bev <- bev%>%mutate(Date=as.yearqtr(Time, format="Q%q-%Y"))
+bev$year <- gsub(" .*", "", bev$Date)
+
+# add gfc variable
+bev <- bev%>%mutate(period= ifelse(year<2010, "Pre and during GFC", "Post GFC"))
+
+# plot beveridge curve
+bev%>%filter(Country=="United States")%>%
+  arrange(Date)%>%
+  ggplot(aes(x=u, y=v)) + 
+  geom_path(aes(colour=period)) + 
+  geom_point(aes(colour=period), size=2, alpha=0.5) +
+  geom_smooth(span=1.5, aes(group=period), se=FALSE, linetype="dashed", colour="black") +
+  scale_colour_manual("Period", values=c("Red", "Blue")) +
+  labs(x="Unemployment rate", y="Vacancy rate", 
+       title="Beveridge curve shift in the US post GFC", 
+       subtitle= "Data from 2000-2019") + 
+  theme(plot.title=element_text(face="bold", size=20), legend.position = c(.9,.9))
+
+
+```
+

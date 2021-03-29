@@ -26,6 +26,15 @@
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
   pre:not([class]) {
@@ -70,6 +79,7 @@ h6 {
   text-align: left;
 }
 </style>
+
 
 
 
@@ -355,6 +365,13 @@ div.tocify {
 </li>
 <li>
   <a href="schooling.html">IV and simple hypothesis testing</a>
+</li>
+<li>
+<<<<<<< HEAD
+  <a href="beveridge.html">Beveridge curve shift</a>
+=======
+  <a href="beveridgecurve.html">Beveridge curve shift</a>
+>>>>>>> 0d48b17391636fa760534339515a88b097f1bdb5
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -662,6 +679,7 @@ sstage1</code></pre>
 <pre class="r"><code># significant estimator for cathhs. Likely uncorrelated with the unobserved so
 # evidence for valid instrument.
 #</code></pre>
+<p>Note that the squared t-statistic for the instrument parcath is greater than 10 which, as a rule of thumb, indicates a strong instrument.</p>
 <p>I will build the regression using the fitted values of the cathhs variable and this will show explicit results. However, the standard errors in the regression will be calculated wrong so I will use the function ivreg from the AER package to collect the correct results.</p>
 <pre class="r"><code>#
 skl$cathhs_hat &lt;- fitted(stage1)
@@ -789,6 +807,7 @@ smod3</code></pre>
 ## F Statistic                     964.063*** (df = 10; 7419)             
 ## =======================================================================
 ## Note:                                       *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>As we cannot perform an overidentification test (i.e. check the exogeneity assumption) on this model as the model is exactly identified. If the students parents being catholic is correlated with any unobserved factor that has a causal relationship with math score then bias may be apparent in the model still.</p>
 </div>
 </div>
 </div>
@@ -804,7 +823,7 @@ smod3</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();

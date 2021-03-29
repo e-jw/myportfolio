@@ -230,6 +230,8 @@ sstage1
 #
 ```
 
+Note that the squared t-statistic for the instrument parcath is greater than 10 which, as a rule of thumb, indicates a strong instrument. 
+
 I will build the regression using the fitted values of the cathhs variable and this will show explicit results. However, the standard errors in the regression will be calculated wrong so I will use the function ivreg from the AER package to collect the correct results. 
 
 ```{r}
@@ -257,6 +259,7 @@ We can compare models before and after IV.
 stargazer(mod1, mod3, type="text")
 ```
 
+As we cannot perform an overidentification test (i.e. check the exogeneity assumption) on this model as the model is exactly identified. If the students parents being catholic is correlated with any unobserved factor that has a causal relationship with math score then bias may be apparent in the model still. 
 
 
 
