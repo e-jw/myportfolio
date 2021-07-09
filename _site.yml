@@ -9,9 +9,5 @@ navbar:
     - text: "IV and simple hypothesis testing"
       href: schooling.html
     - text: "Beveridge curve shift"
-<<<<<<< HEAD
-      href: beveridge.html
-=======
       href: beveridgecurve.html
->>>>>>> 0d48b17391636fa760534339515a88b097f1bdb5
 output_dir: "docs"

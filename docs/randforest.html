@@ -26,15 +26,6 @@
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
-<style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
-
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
   pre:not([class]) {
@@ -79,7 +70,6 @@ h6 {
   text-align: left;
 }
 </style>
-
 
 
 
@@ -367,11 +357,7 @@ div.tocify {
   <a href="schooling.html">IV and simple hypothesis testing</a>
 </li>
 <li>
-<<<<<<< HEAD
-  <a href="beveridge.html">Beveridge curve shift</a>
-=======
   <a href="beveridgecurve.html">Beveridge curve shift</a>
->>>>>>> 0d48b17391636fa760534339515a88b097f1bdb5
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -609,7 +595,7 @@ modelfit &lt;- train(test.preparation.course ~ ., data = train, method = &quot;r
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
